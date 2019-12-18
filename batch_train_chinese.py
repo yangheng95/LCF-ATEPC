@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+# file: batch_train_chinese.py
+# author: yangheng <yangheng@m.scnu.edu.cn>
+# Copyright (C) 2019. All Rights Reserved.
+
 from __future__ import absolute_import, division, print_function
 
 import argparse
