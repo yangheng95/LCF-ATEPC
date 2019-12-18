@@ -1,0 +1,15 @@
+{
+     "config1": {
+    "dataset": "laptop",
+    "output_dir": "output",
+    "bert_base": false,
+    "SRD": 5,
+    "learning_rate": 3e-5,
+    "dropout": 0,
+    "num_train_epochs": 5,
+    "train_batch_size": 32,
+    "max_seq_length": 60,
+    "local_context_focus": "cdm",
+    "only_ate_or_apc": "None"
+  }
+}
