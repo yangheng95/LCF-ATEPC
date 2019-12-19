@@ -35,19 +35,19 @@ python batch_train.py
 ## Out of Memory
 
 Since BERT models require a lot of memory. If the out-of-memory problem while training the model, here are the ways to mitigate the problem:
-1. Reduce the training batch size
-2. Reduce the longest input sequence
+1. Reduce the training batch size ( train_batch_size = 4 or 8 )
+2. Reduce the longest input sequence ( max_seq_length = 40 or 60 )
 3. Use a unique BERT layer to model for both local and global contexts
 
 ## Model Performance
 
-### Optimal Performance on the SemEval-2014 Task4 Datasets
-
-![Chinese](assets/results of Chinese.png)
-
 ### Optimal Performance on the Chinese Review Datesets
 
-![SemEval](assets/results of SemEval-2014.png)
+![SemEval](assets/Chinese-results.png)
+
+### Optimal Performance on the SemEval-2014 Task4 Datasets
+
+![Chinese](assets/SemEval-2014-results.png)
 
 Full experimental results and performance comparisons can be obtained from the [paper]((https://arxiv.org/abs/1912.07976))
 
