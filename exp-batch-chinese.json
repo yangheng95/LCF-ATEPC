@@ -3,12 +3,12 @@
     "dataset": "phone",
     "bert_base": false,
     "output_dir": "output",
-    "SRD": 0,
+    "SRD": 5,
     "learning_rate": 3e-5,
     "dropout": 0,
     "num_train_epochs": 5,
-    "train_batch_size": 32,
-    "max_seq_length": 45,
+    "train_batch_size": 16,
+    "max_seq_length": 80,
     "local_context_focus": "cdm",
     "only_ate_or_apc": "None"
   }

@@ -1,15 +1,19 @@
 # LCF-ATEPC
 
-> codes for paper [A Multi-task Learning Model for Chinese-oriented Aspect Polarity Classification and Aspect Term Extraction](https://arxiv.org/abs/1912.07976)
+codes for paper [A Multi-task Learning Model for Chinese-oriented Aspect Polarity Classification and Aspect Term Extraction](https://arxiv.org/abs/1912.07976)
 
-> LCF-ATEPC，面向中文及多语言的ATE和APC联合学习模型。
+> LCF-ATEPC，面向中文及多语言的ATE和APC联合学习模型，基于PyTorch
+> LCF-ATEPC,  a multi-task learning model for Chinese and multilingual-oriented ATE and APC task, based on PyTorch
+
 
 ![LICENSE](https://img.shields.io/packagist/l/doctrine/orm.svg)
 ![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/a-multi-task-learning-model-for-chinese/aspect-based-sentiment-analysis-on-semeval)](https://paperswithcode.com/sota/aspect-based-sentiment-analysis-on-semeval?p=a-multi-task-learning-model-for-chinese)
 
 ## Requirement
 
-* python 3.6 / 3.7
+* Python >= 3.7
+* PyTorch >= 1.0
 * [pytorch-transformers](https://github.com/huggingface/pytorch-transformers) >= 1.2.0
 
 
@@ -27,6 +31,25 @@ Else traininng on English or multilingual Review dataset: complete the experimen
 ```sh
 python batch_train.py
 ```
+
+## Out of Memory
+
+Since BERT models require a lot of memory. If the out-of-memory problem while training the model, here are the ways to mitigate the problem:
+1. Reduce the training batch size
+2. Reduce the longest input sequence
+3. Use a unique BERT layer to model for both local and global contexts
+
+## Model Performance
+
+### Optimal Performance on the SemEval-2014 Task4 Datasets
+
+![Chinese](assets/results of Chinese.png)
+
+### Optimal Performance on the Chinese Review Datesets
+
+![SemEval](assets/results of SemEval-2014.png)
+
+Full experimental results and performance comparisons can be obtained from the [paper]((https://arxiv.org/abs/1912.07976))
 
 ## Model Architecture
 ![lcf](assets/lcf-atepc.png)
