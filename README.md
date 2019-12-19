@@ -2,8 +2,9 @@
 
 codes for paper [A Multi-task Learning Model for Chinese-oriented Aspect Polarity Classification and Aspect Term Extraction](https://arxiv.org/abs/1912.07976)
 
-> LCF-ATEPC，面向中文及多语言的ATE和APC联合学习模型，基于PyTorch \
->
+> LCF-ATEPC，面向中文及多语言的ATE和APC联合学习模型，基于PyTorch 
+
+
 > LCF-ATEPC,  a multi-task learning model for Chinese and multilingual-oriented ATE and APC task, based on PyTorch
 
 
@@ -50,7 +51,7 @@ Since BERT models require a lot of memory. If the out-of-memory problem while tr
 
 ![Chinese](assets/SemEval-2014-results.png)
 
-Full experimental results and performance comparisons can be obtained from the [paper]((https://arxiv.org/abs/1912.07976))
+Full experimental results and performance comparisons can be obtained from our [paper]((https://arxiv.org/abs/1912.07976)).
 
 ## Model Architecture
 ![lcf](assets/lcf-atepc.png)
