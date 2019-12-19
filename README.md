@@ -2,7 +2,8 @@
 
 codes for paper [A Multi-task Learning Model for Chinese-oriented Aspect Polarity Classification and Aspect Term Extraction](https://arxiv.org/abs/1912.07976)
 
-> LCF-ATEPC，面向中文及多语言的ATE和APC联合学习模型，基于PyTorch
+> LCF-ATEPC，面向中文及多语言的ATE和APC联合学习模型，基于PyTorch \
+>
 > LCF-ATEPC,  a multi-task learning model for Chinese and multilingual-oriented ATE and APC task, based on PyTorch
 
 
