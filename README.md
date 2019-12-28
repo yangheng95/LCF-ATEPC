@@ -43,7 +43,7 @@ Since BERT models require a lot of memory. If the out-of-memory problem while tr
 
 ## Model Performance
 
-### Performance on the Chinese Review Datesets（Without Adapted BERT）
+### Performance on the SemEval-2014 Task4 Datesets and Multilingual Dataset（Without Adapted BERT）
 
 ![SemEval](assets/Chinese-results.png)
 
