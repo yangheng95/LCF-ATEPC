@@ -22,8 +22,9 @@ from tqdm import tqdm, trange
 
 from utils.data_utils import ATEPCProcessor, convert_examples_to_features
 
-from model.lcf_atepc import LCF_ATEPC, BertModel
-from model.lcf_atepc_chinese import LCF_ATEPC_Chinese, BertModel
+from model.lcf_atepc import LCF_ATEPC
+from model.lcf_atepc_chinese import LCF_ATEPC_Chinese
+from pytorch_transformers import BertModel
 
 from sklearn.metrics import f1_score
 from time import strftime, localtime
