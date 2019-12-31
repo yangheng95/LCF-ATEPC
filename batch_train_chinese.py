@@ -22,7 +22,8 @@ from tqdm import tqdm, trange
 
 from utils.data_utils import ATEPCProcessor, convert_examples_to_features
 
-from model.lcf_atepc_chinese import LCF_ATEPC_Chinese, BertModel
+from model.lcf_atepc_chinese import LCF_ATEPC_Chinese
+from pytorch_transformers import BertModel
 
 from sklearn.metrics import f1_score
 from time import strftime, localtime
@@ -33,8 +34,6 @@ logger.addHandler(logging.StreamHandler(sys.stdout))
 
 time = '{}'.format(strftime("%y%m%d-%H%M%S", localtime()))
 os.mkdir('logs/{}'.format(time))
-os.system('cp -r *.py logs/{}/'.format(time))
-os.system('cp -r model/*.py logs/{}/'.format(time))
 log_file = 'logs/{}/{}.log'.format(time, time)
 logger.addHandler(logging.FileHandler(log_file))
 
