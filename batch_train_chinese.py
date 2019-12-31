@@ -69,7 +69,7 @@ def main(config):
         'mixed': "atepc_datasets/mixed",
     }
 
-    if args.dataset in {'laptop','restaurant','twitter','mixed'}:
+    if args.dataset not in {'Rhone','restaurant','twitter','mixed'}:
         logger.warning("\n\nThis is the training script for English and multilingual review dataset,"
                        " DO NOT use this script to train model on {} dataset!!!\n\n".format( args.dataset))
 
@@ -98,7 +98,7 @@ def main(config):
                     polarities.append(polarity)
             examples[i].polarity = polarities
 
-    tokenizer = BertTokenizer.from_pretrained(args.bert_model, do_lower_case=True)
+    tokenizer = BertTokenizer.from_pretrained(args.bert_model, do_lower_case=False)
     train_examples = processor.get_train_examples(args.data_dir)
     convert_polarity(train_examples)
 
@@ -197,10 +197,8 @@ def main(config):
                                 y_pred.append(temp_2)
                                 break
                             else:
-                                temp_1.append(label_map[label_ids[i][j]])
-                                if not (0<ate_logits[i][j]<5):
-                                    ate_logits[i][j]=1
-                                temp_2.append(label_map[ate_logits[i][j]])
+                                temp_1.append(label_map.get(label_ids[i][j], 1))
+                                temp_2.append(label_map.get(ate_logits[i][j], 1))
             # code block for eval_ATE task
 
         # code block for eval_APC task

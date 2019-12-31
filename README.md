@@ -7,6 +7,7 @@ codes for paper [A Multi-task Learning Model for Chinese-oriented Aspect Polarit
 
 > LCF-ATEPC,  a multi-task learning model for Chinese and multilingual-oriented ATE and APC task, based on PyTorch
 
+> Branch without-spc removed the BERT-SPC input format from the ATE task, other improvements are on designing.
 
 ![LICENSE](https://img.shields.io/packagist/l/doctrine/orm.svg)
 ![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)
@@ -16,7 +17,7 @@ codes for paper [A Multi-task Learning Model for Chinese-oriented Aspect Polarit
 
 * Python >= 3.7
 * PyTorch >= 1.0
-* [pytorch-transformers](https://github.com/huggingface/pytorch-transformers) >= 1.2.0
+* [pytorch-transformers](https://github.com/huggingface/pytorch-transformers) >= 0.6.1
 
 
 ## Training

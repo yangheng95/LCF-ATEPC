@@ -71,7 +71,7 @@ def main(config):
         'twitter': "atepc_datasets/twitter",
         'mixed': "atepc_datasets/mixed",
     }
-    if args.dataset in {'camera','car','phone','notebook'}:
+    if args.dataset not in {'camera','car','phone','notebook'}:
         logger.warning("\n\nThis is the training script for Chinese review dataset,"
                        " DO NOT use this script to train model on {} dataset!!!\n\n".format(args.dataset))
     pretrained_bert_models = {
@@ -89,7 +89,7 @@ def main(config):
     args.bert_model = pretrained_bert_models[args.dataset]
     args.data_dir = datasets[args.dataset]
 
-    tokenizer = BertTokenizer.from_pretrained(args.bert_model, do_lower_case=True)
+    tokenizer = BertTokenizer.from_pretrained(args.bert_model, do_lower_case=False)
     train_examples = processor.get_train_examples(args.data_dir)
     num_train_optimization_steps = int(
         len(train_examples) / args.train_batch_size / args.gradient_accumulation_steps) * args.num_train_epochs
@@ -182,9 +182,8 @@ def main(config):
                             y_pred.append(temp_2)
                             break
                         else:
-                            temp_1.append(label_map[label_ids[i][j]])
-                            if not (0 < ate_logits[i][j] < 5): ate_logits[i][j] = 1
-                            temp_2.append(label_map[ate_logits[i][j]])
+                            temp_1.append(label_map.get(label_ids[i][j], 1))
+                            temp_2.append(label_map.get(ate_logits[i][j], 1))
 
         test_acc = n_test_correct / n_test_total
         test_f1 = f1_score(torch.argmax(test_apc_logits_all, -1).cpu(), test_polarities_all.cpu(),
