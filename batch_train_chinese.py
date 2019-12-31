@@ -69,8 +69,8 @@ def main(config):
         'mixed': "atepc_datasets/mixed",
     }
 
-    if args.dataset not in {'Rhone','restaurant','twitter','mixed'}:
-        logger.warning("\n\nThis is the training script for English and multilingual review dataset,"
+    if args.dataset not in {'laptop','restaurant','twitter','mixed'}:
+        logger.warning("\n\nThis is the training script for Chinese review dataset,"
                        " DO NOT use this script to train model on {} dataset!!!\n\n".format( args.dataset))
 
 

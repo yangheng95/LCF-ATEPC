@@ -71,16 +71,15 @@ def main(config):
         'twitter': "atepc_datasets/twitter",
         'mixed': "atepc_datasets/mixed",
     }
-    if args.dataset not in {'camera','car','phone','notebook'}:
-        logger.warning("\n\nThis is the training script for Chinese review dataset,"
+    if args.dataset in {'camera','car','phone','notebook'}:
+        logger.warning("\n\nThis is the training script for Multilingual and English review dataset,"
                        " DO NOT use this script to train model on {} dataset!!!\n\n".format(args.dataset))
     pretrained_bert_models = {
         'camera': "bert-base-chinese",
         'car': "bert-base-chinese",
         'phone': "bert-base-chinese",
         'notebook': "bert-base-chinese",
-        # 'laptop': "bert-base-uncased",
-        'laptop': "bert_pretrained_laptop",
+        'laptop': "bert-base-uncased",
         'restaurant': "bert-base-uncased",
         'twitter': "bert-base-uncased",
         'mixed': "bert-base-multilingual-uncased",
@@ -294,7 +293,6 @@ def parse_experiments(path):
                             help="The initial learning rate for Adam.")
         parser.add_argument("--bert_base", default=config['bert_base'], type=bool,
                             help="Use the BERT-Base model instead of LCF-ATEPC model")
-        # parser.add_argument("--bert_model", default='bert-base-uncased' if 'bert_model' not in config.keys() else config['bert_model'], type=str)
         parser.add_argument("--local_context_focus",
                             default=None if 'None' in config['local_context_focus'] else config['local_context_focus'],
                             type=str)
