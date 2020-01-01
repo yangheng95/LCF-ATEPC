@@ -3,8 +3,6 @@
 # author: yangheng <yangheng@m.scnu.edu.cn>
 # Copyright (C) 2019. All Rights Reserved.
 
-from __future__ import absolute_import, division, print_function
-
 from pytorch_transformers.modeling_bert import BertForTokenClassification, BertPooler, BertSelfAttention
 
 from torch.nn import Linear, CrossEntropyLoss
@@ -26,14 +24,12 @@ class SelfAttention(nn.Module):
                                             dtype=np.float32), dtype=torch.float32).to(self.args.device)
         SA_out = self.SA(inputs, zero_tensor)
         return self.tanh(SA_out[0])
-        # return SA_out[0]
 
 class LCF_ATEPC(BertForTokenClassification):
 
     def __init__(self, bert_base_model, args):
         super(LCF_ATEPC, self).__init__(config=bert_base_model.config)
         config = bert_base_model.config
-        self.evaluate=False
         self.bert = bert_base_model
         self.args = args
         if self.args.local_context_focus is not None:
@@ -43,8 +39,8 @@ class LCF_ATEPC(BertForTokenClassification):
         self.bert_global_focus = self.bert
         self.dropout = nn.Dropout(self.args.dropout)
         self.bert_SA = SelfAttention(config, args)
-        self.linear_double = nn.Linear(768 * 2, 768)
-        self.linear_triple = nn.Linear(768 * 3, 768)
+        self.linear_double = Linear(768 * 2, 768)
+        self.linear_triple = Linear(768 * 3, 768)
 
     def get_batch_polarities(self, b_polarities):
         b_polarities = b_polarities.detach().cpu().numpy()
@@ -121,12 +117,11 @@ class LCF_ATEPC(BertForTokenClassification):
 
     def forward(self, input_ids_spc, token_type_ids=None, attention_mask=None, labels=None, polarities=None, valid_ids=None,
                 attention_mask_label=None):
-        if self.args.bert_base:
-            input_ids_spc=self.get_ids_for_local_context_extractor(input_ids_spc)
+        if not self.args.use_bert_spc:
+            input_ids_spc = self.get_ids_for_local_context_extractor(input_ids_spc)
         global_context_out, _ = self.bert(input_ids_spc, token_type_ids, attention_mask)
         polarity_labels = self.get_batch_polarities(polarities)
 
-        # code block for ATE task
         batch_size, max_len, feat_dim = global_context_out.shape
         global_valid_output = torch.zeros(batch_size, max_len, feat_dim, dtype=torch.float32).to(self.args.device)
         for i in range(batch_size):
@@ -138,12 +133,10 @@ class LCF_ATEPC(BertForTokenClassification):
         global_context_out = self.dropout(global_valid_output)
         ate_logits = self.classifier(global_context_out)
 
-
         if self.args.local_context_focus is not None:
             local_context_ids = self.get_ids_for_local_context_extractor(input_ids_spc)
             local_context_out, _ = self.local_bert(local_context_ids)
 
-            # code block for ATE task
             batch_size, max_len, feat_dim = local_context_out.shape
             local_valid_output = torch.zeros(batch_size, max_len, feat_dim, dtype=torch.float32).to(self.args.device)
             for i in range(batch_size):

@@ -7,8 +7,6 @@ codes for paper [A Multi-task Learning Model for Chinese-oriented Aspect Polarit
 
 > LCF-ATEPC,  a multi-task learning model for Chinese and multilingual-oriented ATE and APC task, based on PyTorch
 
-> Branch without-spc removed the BERT-SPC input format from the ATE task, other improvements are on designing.
-
 ![LICENSE](https://img.shields.io/packagist/l/doctrine/orm.svg)
 ![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/a-multi-task-learning-model-for-chinese/aspect-based-sentiment-analysis-on-semeval)](https://paperswithcode.com/sota/aspect-based-sentiment-analysis-on-semeval?p=a-multi-task-learning-model-for-chinese)
@@ -18,18 +16,18 @@ codes for paper [A Multi-task Learning Model for Chinese-oriented Aspect Polarit
 * Python >= 3.7
 * PyTorch >= 1.0
 * [pytorch-transformers](https://github.com/huggingface/pytorch-transformers) >= 0.6.1
-
+默认不部署BERT-SPC输入以保证ATE结果的可靠性。如果只训练APC部分，设定`use_bert_spc = True'可以提升性能。
 
 ## Training
 > We use the configuration file to manage experiments setting
 
-Traininng on Chinese-oriented Review dataset: complete the experiments configuration [exp-batch-chinese.json](./exp-batch-chinese.json) and run 
+Training on Chinese-oriented Review dataset: complete the experiments configuration [exp-batch-chinese.json](./exp-batch-chinese.json) and run 
 
 ```sh
 python batch_train_chinese.py
 ```
 
-Else traininng on English or multilingual Review dataset: complete the experiments configuration [exp-batch.json](./exp-batch.json) and run 
+Else training on English or multilingual Review dataset: complete the experiments configuration [exp-batch.json](./exp-batch.json) and run 
 
 ```sh
 python batch_train.py
@@ -44,11 +42,11 @@ Since BERT models require a lot of memory. If the out-of-memory problem while tr
 
 ## Model Performance
 
-### Performance on the SemEval-2014 Task4 Datesets and Multilingual Dataset（Without Adapted BERT）
+Performance on the SemEval-2014 Task4 Datesets and Multilingual Dataset（Without Adapted BERT）
 
 ![SemEval](assets/multilingual-results.png)
 
-### Optimal Performance on the SemEval-2014 Task4 Datasets
+Optimal Performance on the SemEval-2014 Task4 Datasets
 
 ![Chinese](assets/SemEval-2014-results.png)
 

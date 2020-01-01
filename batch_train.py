@@ -35,8 +35,6 @@ logger.addHandler(logging.StreamHandler(sys.stdout))
 
 time = '{}'.format(strftime("%y%m%d-%H%M%S", localtime()))
 os.mkdir('logs/{}'.format(time))
-os.system('cp -r *.py logs/{}/'.format(time))
-os.system('cp -r model/*.py logs/{}/'.format(time))
 log_file = 'logs/{}/{}.log'.format(time, time)
 logger.addHandler(logging.FileHandler(log_file))
 
@@ -232,14 +230,16 @@ def main(config):
                 input_ids_spc, input_mask, segment_ids, label_ids, polarities, valid_ids, l_mask = batch
                 loss_ate, loss_apc = model(input_ids_spc, segment_ids, input_mask, label_ids, polarities, valid_ids,
                                            l_mask)
-                if args.only_ate_or_apc is None:
-                    loss = loss_ate + loss_apc
-                    loss.backward()
-                elif 'ate' in args.only_ate_or_apc:
-                    loss_ate.backward()
-                elif 'apc' in args.only_ate_or_apc:
-                    loss_apc.backward()
-                # logger.info(f'loss={round(loss.item(), 4)} (loss_ate{round(loss_ate.item(), 4)}+loss_apc{round(loss_apc.item(), 4)})')
+                loss = loss_ate + loss_apc
+                loss.backward()
+                # if args.only_ate_or_apc is None:
+                #     loss = loss_ate + loss_apc
+                #     loss.backward()
+                # elif 'ate' in args.only_ate_or_apc:
+                #     loss_ate.backward()
+                # elif 'apc' in args.only_ate_or_apc:
+                #     loss_apc.backward()
+                logger.info(f'loss={round(loss.item(), 4)} (loss_ate{round(loss_ate.item(), 4)}+loss_apc{round(loss_apc.item(), 4)})')
                 nb_tr_examples += input_ids_spc.size(0)
                 nb_tr_steps += 1
                 optimizer.step()
@@ -247,14 +247,7 @@ def main(config):
                 global_step += 1
                 if global_step % args.eval_steps == 0:
                     apc_result, ate_result = evaluate()
-                    path = '{0}/{1}_{2}_apcacc_{3}_apcf1_{4}_atef1_{5}'.format(
-                        args.output_dir,
-                        args.data_dir.split('/')[1],
-                        args.local_context_focus,
-                        round(apc_result['max_apc_test_acc'], 2),
-                        round(apc_result['max_apc_test_f1'], 2),
-                        round(ate_result, 2)
-                    )
+
                     max_apc_test_acc = apc_result['max_apc_test_acc'] if apc_result[
                                                                              'max_apc_test_acc'] > max_apc_test_acc else max_apc_test_acc
                     max_apc_test_f1 = apc_result['max_apc_test_f1'] if apc_result[
@@ -291,8 +284,8 @@ def parse_experiments(path):
         parser.add_argument("--SRD", default=int(config['SRD']), type=int)
         parser.add_argument("--learning_rate", default=float(config['learning_rate']), type=float,
                             help="The initial learning rate for Adam.")
-        parser.add_argument("--bert_base", default=config['bert_base'], type=bool,
-                            help="Use the BERT-Base model instead of LCF-ATEPC model")
+        parser.add_argument("--use_bert_spc", default=config['use_bert_spc'], type=bool,
+                            help="Use the BERT-SPC model to enhance the performance of the APC task.")
         parser.add_argument("--local_context_focus",
                             default=None if 'None' in config['local_context_focus'] else config['local_context_focus'],
                             type=str)
@@ -302,9 +295,9 @@ def parse_experiments(path):
                             help="Total batch size for training.")
         parser.add_argument("--dropout", default=float(config['dropout']), type=int)
         parser.add_argument("--max_seq_length", default=int(config['max_seq_length']), type=int)
-        parser.add_argument("--only_ate_or_apc",
-                            default=None if 'None' in config['only_ate_or_apc'] else config['only_ate_or_apc'],
-                            type=str)
+        # parser.add_argument("--only_ate_or_apc",
+        #                     default=None if 'None' in config['only_ate_or_apc'] else config['only_ate_or_apc'],
+        #                     type=str)
 
         ## Other parameters
         parser.add_argument("--eval_batch_size", default=32, type=int, help="Total batch size for eval.")

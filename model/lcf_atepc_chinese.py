@@ -3,10 +3,7 @@
 # author: yangheng <yangheng@m.scnu.edu.cn>
 # Copyright (C) 2019. All Rights Reserved.
 
-from __future__ import absolute_import, division, print_function
-
 from pytorch_transformers.modeling_bert import BertForTokenClassification, BertPooler, BertSelfAttention
-from pytorch_transformers import BertModel
 from torch.nn import Linear, CrossEntropyLoss
 import torch
 import torch.nn as nn
@@ -26,7 +23,6 @@ class SelfAttention(nn.Module):
                                             dtype=np.float32), dtype=torch.float32).to(self.args.device)
         SA_out = self.SA(inputs, zero_tensor)
         return self.tanh(SA_out[0])
-        # return SA_out[0]
 
 class LCF_ATEPC_Chinese(BertForTokenClassification):
 
@@ -120,12 +116,11 @@ class LCF_ATEPC_Chinese(BertForTokenClassification):
 
     def forward(self, input_ids_spc, token_type_ids=None, attention_mask=None, labels=None, polarities=None, valid_ids=None,
                 attention_mask_label=None):
-        if self.args.bert_base:
-            input_ids_spc=self.get_ids_for_local_context_extractor(input_ids_spc)
+        if not self.args.use_bert_spc:
+            input_ids_spc = self.get_ids_for_local_context_extractor(input_ids_spc)
         global_context_out, _ = self.bert(input_ids_spc, token_type_ids, attention_mask)
         polarity_labels = self.get_batch_polarities(polarities)
 
-        # code block for ATE task
         batch_size, max_len, feat_dim = global_context_out.shape
         global_valid_output = torch.zeros(batch_size, max_len, feat_dim, dtype=torch.float32).to(self.args.device)
         for i in range(batch_size):
@@ -141,7 +136,6 @@ class LCF_ATEPC_Chinese(BertForTokenClassification):
             local_context_ids = self.get_ids_for_local_context_extractor(input_ids_spc)
             local_context_out, _ = self.local_bert(local_context_ids)
 
-            # code block for ATE task
             batch_size, max_len, feat_dim = local_context_out.shape
             local_valid_output = torch.zeros(batch_size, max_len, feat_dim, dtype=torch.float32).to(self.args.device)
             for i in range(batch_size):

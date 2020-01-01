@@ -50,7 +50,7 @@ def readfile(filename):
     tag= []
     polarity = []
     for line in f:
-        if len(line )==0 or line.startswith('-DOCSTART') or line[0 ]=="\n":
+        if len(line )==0 or line.startswith('-DOCSTART') or line[0] == "\n":
             if len(sentence) > 0:
                 data.append((sentence, tag, polarity))
                 sentence = []
