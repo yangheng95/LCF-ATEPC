@@ -1,8 +1,9 @@
 # LCF-ATEPC
 
-codes for paper [A Multi-task Learning Model for Chinese-oriented Aspect Polarity Classification and Aspect Term Extraction](https://arxiv.org/abs/1912.07976)
+codes for our paper [A Multi-task Learning Model for Chinese-oriented Aspect Polarity Classification and Aspect Term Extraction](https://arxiv.org/abs/1912.07976)
 
-> LCF-ATEPC，面向中文及多语言的ATE和APC联合学习模型，基于PyTorch 
+> LCF-ATEPC，面向中文及多语言的ATE和APC联合学习模型，基于PyTorch和pytorch-transformers.
+
 > LCF-ATEPC,  a multi-task learning model for Chinese and multilingual-oriented ATE and APC task, based on PyTorch
 
 ![LICENSE](https://img.shields.io/packagist/l/doctrine/orm.svg)
@@ -13,7 +14,7 @@ codes for paper [A Multi-task Learning Model for Chinese-oriented Aspect Polarit
 
 * Python >= 3.7
 * PyTorch >= 1.0
-* [pytorch-transformers](https://github.com/huggingface/pytorch-transformers) >= 0.6.1
+* [pytorch-transformers](https://github.com/huggingface/pytorch-transformers) >= 1.2.0
 * 默认不部署BERT-SPC输入以保证ATE结果的可靠性。如果只训练APC部分，设定 `use_bert_spc = True` 可以提升性能。
 * Default to remove the BERT-SPC input format to keep the reliability of the ATE performance. Set `use_bert_spc = True` to improve the APC performance while only APC subtask is considered.
 
