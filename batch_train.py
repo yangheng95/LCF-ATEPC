@@ -146,7 +146,9 @@ def main(config):
             label_ids = label_ids.to(device)
             polarities = polarities.to(device)
             l_mask = l_mask.to(device)
-
+            if not args.use_bert_spc:
+                label_ids = model.get_batch_token_labels_bert_base_indices(label_ids, input_ids_spc)
+                input_ids_spc = model.get_ids_for_local_context_extractor(input_ids_spc)
             with torch.no_grad():
                 ate_logits, apc_logits = model(input_ids_spc, segment_ids, input_mask,
                                                valid_ids=valid_ids, polarities=polarities, attention_mask_label=l_mask)
