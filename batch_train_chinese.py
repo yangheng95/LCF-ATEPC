@@ -201,8 +201,10 @@ def main(config):
                                 y_pred.append(temp_2)
                                 break
                             else:
-                                temp_1.append(label_map.get(label_ids[i][j], 1))
-                                temp_2.append(label_map.get(ate_logits[i][j], 1))
+                                temp_1.append(label_map[label_ids[i][j]])
+                                if not (0<ate_logits[i][j]<5):
+                                    ate_logits[i][j]=1
+                                temp_2.append(label_map[ate_logits[i][j]])
             # code block for eval_ATE task
 
         # code block for eval_APC task
