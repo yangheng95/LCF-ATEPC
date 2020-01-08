@@ -15,22 +15,17 @@ codes for our paper [A Multi-task Learning Model for Chinese-oriented Aspect Pol
 * Python >= 3.7
 * PyTorch >= 1.0
 * [pytorch-transformers](https://github.com/huggingface/pytorch-transformers) >= 1.2.0
-* 默认不部署BERT-SPC输入以保证ATE结果的可靠性。如果只训练APC部分，设定 `use_bert_spc = True` 可以提升性能。
+* 现在，BERT-SPC不能被用于训练和测试ATE任务。 指定 `use_bert_spc = True` 可以提升APC任务性能。
 * Default to remove the BERT-SPC input format to keep the reliability of the ATE performance. Set `use_bert_spc = True` to improve the APC performance while only APC subtask is considered.
 
 ## Training
-> We use the configuration file to manage experiments setting
+We use the configuration file to manage experiments setting.
 
-Training on Chinese-oriented Review dataset: complete the experiments configuration [exp-batch-chinese.json](./exp-batch-chinese.json) and run 
+Training in batches by experiments configuration file, refer to the [experiments.json](experiments.json) to manage experiments.
 
+Then, 
 ```sh
-python batch_train_chinese.py
-```
-
-Else training on English or multilingual Review dataset: complete the experiments configuration [exp-batch.json](./exp-batch.json) and run 
-
-```sh
-python batch_train.py
+python train.py --config_path experiments.json
 ```
 
 ## Out of Memory
@@ -42,15 +37,7 @@ Since BERT models require a lot of memory. If the out-of-memory problem while tr
 
 ## Model Performance
 
-Performance on the SemEval-2014 Task4 Datesets and Multilingual Dataset（Without Adapted BERT）
-
-![SemEval](assets/multilingual-results.png)
-
-Optimal Performance on the SemEval-2014 Task4 Datasets
-
-![Chinese](assets/SemEval-2014-results.png)
-
-Full experimental results and performance comparisons can be obtained from our [paper]((https://arxiv.org/abs/1912.07976)).
+Pending Evaluation...
 
 ## Model Architecture
 ![lcf](assets/lcf-atepc.png)

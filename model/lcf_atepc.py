@@ -3,6 +3,9 @@
 # author: yangheng <yangheng@m.scnu.edu.cn>
 # Copyright (C) 2019. All Rights Reserved.
 
+from __future__ import absolute_import, division, print_function
+
+# from transformers.modeling_bert import BertForTokenClassification, BertPooler, BertSelfAttention
 from pytorch_transformers.modeling_bert import BertForTokenClassification, BertPooler, BertSelfAttention
 
 from torch.nn import Linear, CrossEntropyLoss
@@ -32,15 +35,29 @@ class LCF_ATEPC(BertForTokenClassification):
         config = bert_base_model.config
         self.bert = bert_base_model
         self.args = args
+        # do not init lcf layer if BERT-SPC or BERT-BASE specified
         if self.args.local_context_focus is not None:
             self.local_bert = copy.deepcopy(self.bert)
         self.pooler = BertPooler(config)
-        self.dense = torch.nn.Linear(768, 3)
+        if args.dataset in {'camera', 'car', 'phone', 'notebook'}:
+            self.dense = torch.nn.Linear(768, 2)
+        else:
+            self.dense = torch.nn.Linear(768, 3)
         self.bert_global_focus = self.bert
         self.dropout = nn.Dropout(self.args.dropout)
         self.bert_SA = SelfAttention(config, args)
-        self.linear_double = Linear(768 * 2, 768)
-        self.linear_triple = Linear(768 * 3, 768)
+        self.linear_double = nn.Linear(768 * 2, 768)
+        self.linear_triple = nn.Linear(768 * 3, 768)
+
+    def get_batch_token_labels_bert_base_indices(self, labels):
+        if labels is None:
+            return
+        # convert tags of BERT-SPC input to BERT-BASE format
+        labels = labels.detach().cpu().numpy()
+        for text_i in range(len(labels)):
+            sep_index = np.argmax((labels[text_i] == 5))
+            labels[text_i][sep_index + 1:] = 0
+        return torch.tensor(labels).to(self.args.device)
 
     def get_batch_polarities(self, b_polarities):
         b_polarities = b_polarities.detach().cpu().numpy()
@@ -71,7 +88,7 @@ class LCF_ATEPC(BertForTokenClassification):
             except:
                 asp_begin=0
             asp_avg_index = (asp_begin * 2 + asp_len) / 2
-            # a_ids[-1] + asp_len + 1 is the position of the last token [SEP]
+            # a_ids[-1] + asp_len + 1 is the position of the last token_i [SEP]
             distances = np.zeros((text_len), dtype=np.float32)
             for i in range(len(distances)):
                 if abs(i - asp_avg_index) + asp_len / 2 > SRD:
@@ -108,31 +125,22 @@ class LCF_ATEPC(BertForTokenClassification):
         return masked_text_raw_indices.to(self.args.device)
 
     def get_ids_for_local_context_extractor(self, text_indices):
+        # convert BERT-SPC input to BERT-BASE format
         text_ids = text_indices.detach().cpu().numpy()
         for text_i in range(len(text_ids)):
             sep_index = np.argmax((text_ids[text_i] == 102))
             text_ids[text_i][sep_index + 1:] = 0
         return torch.tensor(text_ids).to(self.args.device)
 
-    def get_batch_token_labels_bert_base_indices(self, labels, bert_base_indices):
-        if labels is None:
-            return
-        labels = labels.detach().cpu().numpy()
-        bert_base_indices = bert_base_indices.detach().cpu().numpy()
-        bert_base_indices = np.array(bert_base_indices > 0)
-        token_labels = []
-        for labels, indices in zip(labels, bert_base_indices):
-            token_labels.append(labels * indices)
-        labels = torch.from_numpy(np.array(token_labels)).long().to(self.args.device)
-        return labels
-
     def forward(self, input_ids_spc, token_type_ids=None, attention_mask=None, labels=None, polarities=None, valid_ids=None,
                 attention_mask_label=None):
         if not self.args.use_bert_spc:
             input_ids_spc = self.get_ids_for_local_context_extractor(input_ids_spc)
+            labels = self.get_batch_token_labels_bert_base_indices(labels)
         global_context_out, _ = self.bert(input_ids_spc, token_type_ids, attention_mask)
         polarity_labels = self.get_batch_polarities(polarities)
 
+        # code block for ATE task
         batch_size, max_len, feat_dim = global_context_out.shape
         global_valid_output = torch.zeros(batch_size, max_len, feat_dim, dtype=torch.float32).to(self.args.device)
         for i in range(batch_size):
@@ -145,9 +153,13 @@ class LCF_ATEPC(BertForTokenClassification):
         ate_logits = self.classifier(global_context_out)
 
         if self.args.local_context_focus is not None:
-            local_context_ids = self.get_ids_for_local_context_extractor(input_ids_spc)
-            local_context_out, _ = self.local_bert(local_context_ids)
 
+            if self.args.use_bert_spc:
+                local_context_ids = self.get_ids_for_local_context_extractor(input_ids_spc)
+            else:
+                local_context_ids = input_ids_spc
+
+            local_context_out, _ = self.local_bert(input_ids_spc)
             batch_size, max_len, feat_dim = local_context_out.shape
             local_valid_output = torch.zeros(batch_size, max_len, feat_dim, dtype=torch.float32).to(self.args.device)
             for i in range(batch_size):

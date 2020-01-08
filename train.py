@@ -1,44 +1,38 @@
 # -*- coding: utf-8 -*-
-# file: batch_train_chinese.py
+# file: batch_train.py
 # author: yangheng <yangheng@m.scnu.edu.cn>
 # Copyright (C) 2019. All Rights Reserved.
-
-from __future__ import absolute_import, division, print_function
 
 import argparse
 import json
 import logging
 import os, sys
 import random
+from sklearn.metrics import f1_score
+from time import strftime, localtime
 
 import numpy as np
 import torch
 import torch.nn.functional as F
 from pytorch_transformers.optimization import AdamW
 from pytorch_transformers.tokenization_bert import BertTokenizer
+from pytorch_transformers.modeling_bert import BertModel
 from seqeval.metrics import classification_report
 from torch.utils.data import (DataLoader, RandomSampler, SequentialSampler, TensorDataset)
-from tqdm import tqdm, trange
 
 from utils.data_utils import ATEPCProcessor, convert_examples_to_features
-
-from model.lcf_atepc_chinese import LCF_ATEPC_Chinese
-from pytorch_transformers import BertModel
-
-from sklearn.metrics import f1_score
-from time import strftime, localtime
+from model.lcf_atepc import LCF_ATEPC
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 logger.addHandler(logging.StreamHandler(sys.stdout))
 
 time = '{}'.format(strftime("%y%m%d-%H%M%S", localtime()))
-os.mkdir('logs/{}'.format(time))
-log_file = 'logs/{}/{}.log'.format(time, time)
+log_file = 'logs/{}.log'.format(time)
 logger.addHandler(logging.FileHandler(log_file))
 
-def main(config):
 
+def main(config):
     args = config
 
     if args.gradient_accumulation_steps < 1:
@@ -68,12 +62,6 @@ def main(config):
         'twitter': "atepc_datasets/twitter",
         'mixed': "atepc_datasets/mixed",
     }
-
-    if args.dataset in {'laptop','restaurant','twitter','mixed'}:
-        logger.warning("\n\nThis is the training script for Chinese review dataset,"
-                       " DO NOT use this script to train model on {} dataset!!!\n\n".format( args.dataset))
-
-
     pretrained_bert_models = {
         'camera': "bert-base-chinese",
         'car': "bert-base-chinese",
@@ -90,7 +78,7 @@ def main(config):
 
     def convert_polarity(examples):
         for i in range(len(examples)):
-            polarities=[]
+            polarities = []
             for polarity in examples[i].polarity:
                 if polarity == 2:
                     polarities.append(1)
@@ -98,17 +86,20 @@ def main(config):
                     polarities.append(polarity)
             examples[i].polarity = polarities
 
-    tokenizer = BertTokenizer.from_pretrained(args.bert_model, do_lower_case=False)
+    tokenizer = BertTokenizer.from_pretrained(args.bert_model, do_lower_case=True)
     train_examples = processor.get_train_examples(args.data_dir)
-    convert_polarity(train_examples)
-
+    eval_examples = processor.get_test_examples(args.data_dir)
     num_train_optimization_steps = int(
         len(train_examples) / args.train_batch_size / args.gradient_accumulation_steps) * args.num_train_epochs
-
     bert_base_model = BertModel.from_pretrained(args.bert_model)
-
     bert_base_model.config.num_labels = num_labels
-    model = LCF_ATEPC_Chinese(bert_base_model, args=args)
+
+    if args.dataset in {'camera', 'car', 'phone', 'notebook'}:
+        convert_polarity(train_examples)
+        convert_polarity(eval_examples)
+        model = LCF_ATEPC(bert_base_model, args=args)
+    else:
+        model = LCF_ATEPC(bert_base_model, args=args)
 
     for arg in vars(args):
         logger.info('>>> {0}: {1}'.format(arg, getattr(args, arg)))
@@ -123,11 +114,6 @@ def main(config):
     ]
 
     optimizer = AdamW(optimizer_grouped_parameters, lr=args.learning_rate, weight_decay=0.00001)
-
-    label_map = {i: label for i, label in enumerate(label_list, 1)}
-
-    eval_examples = processor.get_test_examples(args.data_dir)
-    convert_polarity(eval_examples)
     eval_features = convert_examples_to_features(eval_examples, label_list, args.max_seq_length,
                                                  tokenizer)
     all_spc_input_ids = torch.tensor([f.input_ids_spc for f in eval_features], dtype=torch.long)
@@ -145,8 +131,8 @@ def main(config):
 
     def evaluate(eval_ATE=True, eval_APC=True):
         # evaluate
-        apc_result=0
-        ate_result=0
+        apc_result = {'max_apc_test_acc': 0, 'max_apc_test_f1': 0}
+        ate_result = 0
         y_true = []
         y_pred = []
         n_test_correct, n_test_total = 0, 0
@@ -162,17 +148,11 @@ def main(config):
             polarities = polarities.to(device)
             l_mask = l_mask.to(device)
 
-            if not args.use_bert_spc:
-                label_ids = model.get_batch_token_labels_bert_base_indices(label_ids, input_ids_spc)
-                input_ids_spc = model.get_ids_for_local_context_extractor(input_ids_spc)
-
             with torch.no_grad():
                 ate_logits, apc_logits = model(input_ids_spc, segment_ids, input_mask,
                                                valid_ids=valid_ids, polarities=polarities, attention_mask_label=l_mask)
-
-            # code block for eval_APC task
             if eval_APC:
-                polarities = LCF_ATEPC_Chinese.get_batch_polarities(model, polarities)
+                polarities = model.get_batch_polarities(polarities)
                 n_test_correct += (torch.argmax(apc_logits, -1) == polarities).sum().item()
                 n_test_total += len(polarities)
 
@@ -182,41 +162,39 @@ def main(config):
                 else:
                     test_polarities_all = torch.cat((test_polarities_all, polarities), dim=0)
                     test_apc_logits_all = torch.cat((test_apc_logits_all, apc_logits), dim=0)
-            # code block for eval_APC task
 
-            # code block for eval_ATE task
             if eval_ATE:
-                    ate_logits = torch.argmax(F.log_softmax(ate_logits, dim=2), dim=2)
-                    ate_logits = ate_logits.detach().cpu().numpy()
-                    label_ids = label_ids.to('cpu').numpy()
-                    input_mask = input_mask.to('cpu').numpy()
-                    for i, label in enumerate(label_ids):
-                        temp_1 = []
-                        temp_2 = []
-                        for j, m in enumerate(label):
-                            if j == 0:
-                                continue
-                            elif label_ids[i][j] == len(label_list):
-                                y_true.append(temp_1)
-                                y_pred.append(temp_2)
-                                break
-                            else:
-                                temp_1.append(label_map[label_ids[i][j]])
-                                if not (0<ate_logits[i][j]<5):
-                                    ate_logits[i][j]=1
-                                temp_2.append(label_map[ate_logits[i][j]])
-            # code block for eval_ATE task
-
-        # code block for eval_APC task
-        test_acc = n_test_correct / n_test_total
-        test_f1 = f1_score(torch.argmax(test_apc_logits_all, -1).cpu(), test_polarities_all.cpu(),
+                if not args.use_bert_spc:
+                    label_ids = model.get_batch_token_labels_bert_base_indices(label_ids)
+                ate_logits = torch.argmax(F.log_softmax(ate_logits, dim=2), dim=2)
+                ate_logits = ate_logits.detach().cpu().numpy()
+                label_ids = label_ids.to('cpu').numpy()
+                input_mask = input_mask.to('cpu').numpy()
+                for i, label in enumerate(label_ids):
+                    temp_1 = []
+                    temp_2 = []
+                    for j, m in enumerate(label):
+                        if j == 0:
+                            continue
+                        elif label_ids[i][j] == len(label_list):
+                            y_true.append(temp_1)
+                            y_pred.append(temp_2)
+                            break
+                        else:
+                            temp_1.append(label_map.get(label_ids[i][j], 'O'))
+                            temp_2.append(label_map.get(ate_logits[i][j], 1))
+        if eval_APC:
+            test_acc = n_test_correct / n_test_total
+            if args.dataset in {'camera', 'car', 'phone', 'notebook'}:
+                test_f1 = f1_score(torch.argmax(test_apc_logits_all, -1).cpu(), test_polarities_all.cpu(),
                                    labels=[0, 1], average='macro')
-        test_acc=round(test_acc * 100, 2)
-        test_f1=round(test_f1 * 100, 2)
-        apc_result={'max_apc_test_acc':test_acc,'max_apc_test_f1': test_f1}
-        # code block for eval_APC task
+            else:
+                test_f1 = f1_score(torch.argmax(test_apc_logits_all, -1).cpu(), test_polarities_all.cpu(),
+                                   labels=[0, 1, 2], average='macro')
+            test_acc = round(test_acc * 100, 2)
+            test_f1 = round(test_f1 * 100, 2)
+            apc_result = {'max_apc_test_acc': test_acc, 'max_apc_test_f1': test_f1}
 
-        # code block for eval_ATE task
         if eval_ATE:
             report = classification_report(y_true, y_pred, digits=4)
             tmps = report.split()
@@ -256,39 +234,41 @@ def main(config):
                 model.train()
                 batch = tuple(t.to(device) for t in batch)
                 input_ids_spc, input_mask, segment_ids, label_ids, polarities, valid_ids, l_mask = batch
-                loss_ate, loss_apc = model(input_ids_spc, segment_ids, input_mask, label_ids, polarities, valid_ids, l_mask)
+                loss_ate, loss_apc = model(input_ids_spc, segment_ids, input_mask, label_ids, polarities, valid_ids,
+                                           l_mask)
+
                 loss = loss_ate + loss_apc
                 loss.backward()
-                # if args.only_ate_or_apc is None:
-                #     loss = loss_ate + loss_apc
-                #     loss.backward()
-                # elif 'ate' in args.only_ate_or_apc:
-                #     loss_ate.backward()
-                # elif 'apc' in args.only_ate_or_apc:
-                #     loss_apc.backward()
-                logger.info(f'loss={round(loss.item(), 4)} (loss_ate{round(loss_ate.item(), 4)}+loss_apc{round(loss_apc.item(), 4)})')
+
                 nb_tr_examples += input_ids_spc.size(0)
                 nb_tr_steps += 1
                 optimizer.step()
                 optimizer.zero_grad()
                 global_step += 1
                 if global_step % args.eval_steps == 0:
-                    apc_result, ate_result = evaluate()
-                    max_apc_test_acc = apc_result['max_apc_test_acc'] if apc_result['max_apc_test_acc'] > max_apc_test_acc else max_apc_test_acc
-                    max_apc_test_f1 = apc_result['max_apc_test_f1'] if apc_result['max_apc_test_f1'] > max_apc_test_f1 else max_apc_test_f1
+                    apc_result, ate_result = evaluate(eval_ATE=not args.use_bert_spc)
+                    # apc_result, ate_result = evaluate()
+                    max_apc_test_acc = apc_result['max_apc_test_acc'] if \
+                        apc_result['max_apc_test_acc'] > max_apc_test_acc else max_apc_test_acc
+                    max_apc_test_f1 = apc_result['max_apc_test_f1'] if \
+                        apc_result['max_apc_test_f1'] > max_apc_test_f1 else max_apc_test_f1
                     max_ate_test_f1 = ate_result if ate_result > max_ate_test_f1 else max_ate_test_f1
 
                     current_apc_test_acc = apc_result['max_apc_test_acc']
                     current_apc_test_f1 = apc_result['max_apc_test_f1']
-                    current_ate_test_f1 = round(ate_result,2)
+                    current_ate_test_f1 = round(ate_result, 2)
 
                     logger.info('*' * 80)
-                    logger.info('Train {} Epoch{}, Evaluate for {}'.format(args.seed, epoch+1, args.data_dir))
+                    logger.info('Train {} Epoch{}, Evaluate for {}'.format(args.seed, epoch + 1, args.data_dir))
                     logger.info(f'APC_test_acc:{current_apc_test_acc}(max:{max_apc_test_acc})  '
                                 f'APC_test_f1:{current_apc_test_f1}(max:{max_apc_test_f1})')
-                    logger.info(f'ATE_test_f1:{current_ate_test_f1}(max:{max_ate_test_f1})')
-                    logger.info('*'*80)
+                    if args.use_bert_spc:
+                        logger.info(f'ATE_test_F1: DO NOT evaluate for ATE task while `use_bert_spc` is specified.')
+                    else:
+                        logger.info(f'ATE_test_f1:{current_ate_test_f1}(max:{max_ate_test_f1})')
+                    logger.info('*' * 80)
         return [max_apc_test_acc, max_apc_test_f1, max_ate_test_f1]
+
     return train()
 
 
@@ -300,48 +280,41 @@ def parse_experiments(path):
     for id, config in json_config.items():
         # Hyper Parameters
         parser = argparse.ArgumentParser()
-        ## Required parameters
-
         parser.add_argument("--dataset", default=config['dataset'], type=str)
         parser.add_argument("--output_dir", default=config['output_dir'], type=str)
         parser.add_argument("--SRD", default=int(config['SRD']), type=int)
         parser.add_argument("--learning_rate", default=float(config['learning_rate']), type=float,
                             help="The initial learning rate for Adam.")
-        parser.add_argument("--use_bert_spc", default=config['use_bert_spc'], type=bool,
-                            help="Use the BERT-SPC model to enhance the performance of the APC task.")
-        parser.add_argument("--local_context_focus", default= None if 'None' in config['local_context_focus'] else config['local_context_focus'] , type=str)
+        parser.add_argument("--use_bert_spc", default=bool(config['use_bert_spc']), type=bool)
+        parser.add_argument("--local_context_focus",
+                            default=None if 'None' in config['local_context_focus'] else config['local_context_focus'],
+                            type=str)
         parser.add_argument("--num_train_epochs", default=float(config['num_train_epochs']), type=float,
                             help="Total number of training epochs to perform.")
         parser.add_argument("--train_batch_size", default=int(config['train_batch_size']), type=int,
                             help="Total batch size for training.")
         parser.add_argument("--dropout", default=float(config['dropout']), type=int)
         parser.add_argument("--max_seq_length", default=int(config['max_seq_length']), type=int)
-        # parser.add_argument("--only_ate_or_apc", default=None if 'None' in config['only_ate_or_apc'] else config['only_ate_or_apc'],
-        #                     type=str, help="ate or apc. only optimize model for ATE or APC  subtask")
 
         ## Other parameters
-        parser.add_argument("--eval_batch_size", default=32, type=int, help="Total batch size for eval.")
+        parser.add_argument("--eval_batch_size", default=16, type=int, help="Total batch size for eval.")
         parser.add_argument("--eval_steps", default=5, help="evaluate per steps")
         parser.add_argument("--warmup_proportion", default=0.4, type=float,
                             help="Proportion of training to perform linear learning rate warmup for. E.g., 0.1 = 10%% of training.")
         parser.add_argument('--gradient_accumulation_steps', type=int, default=1,
                             help="Number of updates steps to accumulate before performing a backward/update pass.")
-        parser.add_argument('--loss_scale', type=float, default=0,
-                            help="Loss scaling to improve fp16 numeric stability. Only used when fp16 set to True.\n"
-                                 "0 (default value): dynamic loss scaling.\n"
-                                 "Positive power of 2: static loss scaling value.\n")
 
         configs.append(parser.parse_args())
     return configs
 
-
 if __name__ == "__main__":
 
     experiments = argparse.ArgumentParser()
-    experiments.add_argument('--config_path',default='exp-batch-chinese.json',type=str,help='Path of experiments config file')
+    experiments.add_argument('--config_path', default='experiments.json', type=str,help='Path of experiments config file')
     experiments = experiments.parse_args()
 
     from utils.Pytorch_GPUManager import GPUManager
+
     index = GPUManager().auto_choice()
     device = torch.device("cuda:" + str(index) if torch.cuda.is_available() else "cpu")
     results = []
@@ -349,9 +322,9 @@ if __name__ == "__main__":
     n = 3
     for config in exp_configs:
 
-            for i in range(n):
-                config.device = device
-                config.seed = i+1
-                logger.info('No.{} training process of {}'.format(i + 1, n))
-                results.append(main(config))
-                logger.info(results for result in results)
+        for i in range(n):
+            config.device = device
+            config.seed = i + 1
+            logger.info('No.{} training process of {}'.format(i + 1, n))
+            results.append(main(config))
+            logger.info(results for result in results)
