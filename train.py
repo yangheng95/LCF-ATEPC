@@ -356,11 +356,4 @@ if __name__ == "__main__":
                 logger.info('No.{} training process of {}'.format(i + 1, n))
                 results.append(main(config))
 
-            for result in results:
-                if result[0] > max_apc_test_acc:
-                    max_apc_test_acc = result[0]
-                if result[1] > max_apc_test_f1:
-                    max_apc_test_f1 = result[1]
-                if result[2] > max_ate_test_f1:
-                    max_ate_test_f1 = result[2]
 
