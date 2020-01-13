@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData">
+    <serverData>
+      <paths name="wtx@47.92.220.143:5050">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/wtx/winky/atepc" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="yh">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/yh/code/atepc-a" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+    </serverData>
+  </component>
+</project>

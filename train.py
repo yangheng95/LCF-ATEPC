@@ -27,10 +27,11 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 logger.addHandler(logging.StreamHandler(sys.stdout))
 
+os.makedirs('logs', exist_ok=True)
 time = '{}'.format(strftime("%y%m%d-%H%M%S", localtime()))
 log_file = 'logs/{}.log'.format(time)
 logger.addHandler(logging.FileHandler(log_file))
-
+logger.info('log file: {}'.format(log_file))
 
 def main(config):
     args = config
@@ -182,7 +183,7 @@ def main(config):
                             break
                         else:
                             temp_1.append(label_map.get(label_ids[i][j], 'O'))
-                            temp_2.append(label_map.get(ate_logits[i][j], 1))
+                            temp_2.append(label_map.get(ate_logits[i][j], 'O'))
         if eval_APC:
             test_acc = n_test_correct / n_test_total
             if args.dataset in {'camera', 'car', 'phone', 'notebook'}:
@@ -200,6 +201,18 @@ def main(config):
             tmps = report.split()
             ate_result = round(float(tmps[7]) * 100, 2)
         return apc_result, ate_result
+
+    def save_model(path):
+        # Save a trained model and the associated configuration,
+        # Take care of the storage!
+        os.makedirs(path, exist_ok=True)
+        model_to_save = model.module if hasattr(model, 'module') else model  # Only save the model it-self
+        model_to_save.save_pretrained(path)
+        tokenizer.save_pretrained(path)
+        label_map = {i : label for i, label in enumerate(label_list,1)}
+        model_config = {"bert_model":args.bert_model,"do_lower": True,"max_seq_length":args.max_seq_length,"num_labels":len(label_list)+1,"label_map":label_map}
+        json.dump(model_config,open(os.path.join(path,"config.json"),"w"))
+        logger.info('save model to: {}'.format(path))
 
     def train():
         train_features = convert_examples_to_features(
@@ -236,37 +249,54 @@ def main(config):
                 input_ids_spc, input_mask, segment_ids, label_ids, polarities, valid_ids, l_mask = batch
                 loss_ate, loss_apc = model(input_ids_spc, segment_ids, input_mask, label_ids, polarities, valid_ids,
                                            l_mask)
-
                 loss = loss_ate + loss_apc
                 loss.backward()
-
                 nb_tr_examples += input_ids_spc.size(0)
                 nb_tr_steps += 1
                 optimizer.step()
                 optimizer.zero_grad()
                 global_step += 1
                 if global_step % args.eval_steps == 0:
-                    apc_result, ate_result = evaluate(eval_ATE=not args.use_bert_spc)
-                    # apc_result, ate_result = evaluate()
-                    max_apc_test_acc = apc_result['max_apc_test_acc'] if \
-                        apc_result['max_apc_test_acc'] > max_apc_test_acc else max_apc_test_acc
-                    max_apc_test_f1 = apc_result['max_apc_test_f1'] if \
-                        apc_result['max_apc_test_f1'] > max_apc_test_f1 else max_apc_test_f1
-                    max_ate_test_f1 = ate_result if ate_result > max_ate_test_f1 else max_ate_test_f1
+                    if epoch >= args.num_train_epochs-2 or args.num_train_epochs<=2:
+                        # evaluate only in last 2 epochs
+                        apc_result, ate_result = evaluate(eval_ATE=not args.use_bert_spc)
+                        # apc_result, ate_result = evaluate()
+                        path = '{0}/{1}_{2}_apcacc_{3}_apcf1_{4}_atef1_{5}'.format(
+                            args.output_dir,
+                            args.dataset,
+                            args.local_context_focus,
+                            round(apc_result['max_apc_test_acc'], 2),
+                            round(apc_result['max_apc_test_f1'], 2),
+                            round(ate_result, 2)
+                        )
 
-                    current_apc_test_acc = apc_result['max_apc_test_acc']
-                    current_apc_test_f1 = apc_result['max_apc_test_f1']
-                    current_ate_test_f1 = round(ate_result, 2)
+                        if apc_result['max_apc_test_acc'] > max_apc_test_acc:
+                            max_apc_test_acc = apc_result['max_apc_test_acc']
+                        if apc_result['max_apc_test_f1'] > max_apc_test_f1:
+                            max_apc_test_f1 = apc_result['max_apc_test_f1']
+                        if ate_result > max_ate_test_f1:
+                            max_ate_test_f1 = ate_result
 
-                    logger.info('*' * 80)
-                    logger.info('Train {} Epoch{}, Evaluate for {}'.format(args.seed, epoch + 1, args.data_dir))
-                    logger.info(f'APC_test_acc:{current_apc_test_acc}(max:{max_apc_test_acc})  '
-                                f'APC_test_f1:{current_apc_test_f1}(max:{max_apc_test_f1})')
-                    if args.use_bert_spc:
-                        logger.info(f'ATE_test_F1: DO NOT evaluate for ATE task while `use_bert_spc` is specified.')
-                    else:
-                        logger.info(f'ATE_test_f1:{current_ate_test_f1}(max:{max_ate_test_f1})')
-                    logger.info('*' * 80)
+                        if apc_result['max_apc_test_acc'] > max_apc_test_acc or \
+                            apc_result['max_apc_test_f1'] > max_apc_test_f1 or \
+                            ate_result > max_ate_test_f1:
+                            save_model(path)
+
+                        current_apc_test_acc = apc_result['max_apc_test_acc']
+                        current_apc_test_f1 = apc_result['max_apc_test_f1']
+                        current_ate_test_f1 = round(ate_result, 2)
+
+                        logger.info('*' * 80)
+                        logger.info('Train {} Epoch{}, Evaluate for {}'.format(args.seed, epoch + 1, args.data_dir))
+                        logger.info(f'APC_test_acc: {current_apc_test_acc}(max: {max_apc_test_acc})  '
+                                    f'APC_test_f1: {current_apc_test_f1}(max: {max_apc_test_f1})')
+                        if args.use_bert_spc:
+                            logger.info(f'ATE_test_F1: {current_apc_test_f1}(max: {max_apc_test_f1})'
+                                        f' (Unreliable since `use_bert_spc` is "True".)')
+                        else:
+                            logger.info(f'ATE_test_f1: {current_ate_test_f1}(max:{max_ate_test_f1})')
+                        logger.info('*' * 80)
+
         return [max_apc_test_acc, max_apc_test_f1, max_ate_test_f1]
 
     return train()
@@ -295,12 +325,8 @@ def parse_experiments(path):
                             help="Total batch size for training.")
         parser.add_argument("--dropout", default=float(config['dropout']), type=int)
         parser.add_argument("--max_seq_length", default=int(config['max_seq_length']), type=int)
-
-        ## Other parameters
         parser.add_argument("--eval_batch_size", default=16, type=int, help="Total batch size for eval.")
         parser.add_argument("--eval_steps", default=5, help="evaluate per steps")
-        parser.add_argument("--warmup_proportion", default=0.4, type=float,
-                            help="Proportion of training to perform linear learning rate warmup for. E.g., 0.1 = 10%% of training.")
         parser.add_argument('--gradient_accumulation_steps', type=int, default=1,
                             help="Number of updates steps to accumulate before performing a backward/update pass.")
 
@@ -317,14 +343,24 @@ if __name__ == "__main__":
 
     index = GPUManager().auto_choice()
     device = torch.device("cuda:" + str(index) if torch.cuda.is_available() else "cpu")
-    results = []
     exp_configs = parse_experiments(experiments.config_path)
     n = 3
     for config in exp_configs:
+            logger.info('-'*80)
+            logger.info('Config {} (totally {} configs)'.format(exp_configs.index(config)+1,len(exp_configs)))
+            results = []
+            max_apc_test_acc, max_apc_test_f1, max_ate_test_f1 = 0,0,0
+            for i in range(n):
+                config.device = device
+                config.seed = i + 1
+                logger.info('No.{} training process of {}'.format(i + 1, n))
+                results.append(main(config))
 
-        for i in range(n):
-            config.device = device
-            config.seed = i + 1
-            logger.info('No.{} training process of {}'.format(i + 1, n))
-            results.append(main(config))
-            logger.info(results for result in results)
+            for result in results:
+                if result[0] > max_apc_test_acc:
+                    max_apc_test_acc = result[0]
+                if result[1] > max_apc_test_f1:
+                    max_apc_test_f1 = result[1]
+                if result[2] > max_ate_test_f1:
+                    max_ate_test_f1 = result[2]
+

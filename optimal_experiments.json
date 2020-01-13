@@ -1,0 +1,202 @@
+{
+  "config1": {
+    "dataset": "laptop",
+    "output_dir": "output",
+    "use_bert_spc": false,
+    "SRD": 5,
+    "learning_rate": 3e-5,
+    "dropout": 0,
+    "num_train_epochs": 5,
+    "train_batch_size": 32,
+    "max_seq_length": 80,
+    "local_context_focus": "cdm"
+  },
+  "config2": {
+    "dataset": "restaurant",
+    "output_dir": "output",
+    "use_bert_spc": false,
+    "SRD": 5,
+    "learning_rate": 3e-5,
+    "dropout": 0,
+    "num_train_epochs": 5,
+    "train_batch_size": 32,
+    "max_seq_length": 80,
+    "local_context_focus": "cdm"
+  },
+
+  "config4": {
+    "dataset": "laptop",
+    "output_dir": "output",
+    "use_bert_spc": false,
+    "SRD": 5,
+    "learning_rate": 3e-5,
+    "dropout": 0,
+    "num_train_epochs": 5,
+    "train_batch_size": 32,
+    "max_seq_length": 80,
+    "local_context_focus": "cdw"
+  },
+  "config5": {
+    "dataset": "restaurant",
+    "output_dir": "output",
+    "use_bert_spc": false,
+    "SRD": 5,
+    "learning_rate": 3e-5,
+    "dropout": 0,
+    "num_train_epochs": 5,
+    "train_batch_size": 32,
+    "max_seq_length": 80,
+    "local_context_focus": "cdw"
+  },
+
+  "config7": {
+    "dataset": "laptop",
+    "output_dir": "output",
+    "use_bert_spc": false,
+    "SRD": 5,
+    "learning_rate": 3e-5,
+    "dropout": 0,
+    "num_train_epochs": 5,
+    "train_batch_size": 32,
+    "max_seq_length": 80,
+    "local_context_focus": "fusion"
+  },
+  "config8": {
+    "dataset": "restaurant",
+    "output_dir": "output",
+    "use_bert_spc": false,
+    "SRD": 5,
+    "learning_rate": 3e-5,
+    "dropout": 0,
+    "num_train_epochs": 5,
+    "train_batch_size": 32,
+    "max_seq_length": 80,
+    "local_context_focus": "fusion"
+  },
+
+  "config10": {
+    "dataset": "laptop",
+    "output_dir": "output",
+    "use_bert_spc": false,
+    "SRD": 5,
+    "learning_rate": 3e-5,
+    "dropout": 0,
+    "num_train_epochs": 5,
+    "train_batch_size": 32,
+    "max_seq_length": 80,
+    "local_context_focus": "None"
+  },
+  "config11": {
+    "dataset": "restaurant",
+    "output_dir": "output",
+    "use_bert_spc": false,
+    "SRD": 5,
+    "learning_rate": 3e-5,
+    "dropout": 0,
+    "num_train_epochs": 5,
+    "train_batch_size": 32,
+    "max_seq_length": 80,
+    "local_context_focus": "None"
+  },
+
+    "config13": {
+    "dataset": "laptop",
+    "output_dir": "output",
+    "use_bert_spc": true,
+    "SRD": 5,
+    "learning_rate": 3e-5,
+    "dropout": 0,
+    "num_train_epochs": 5,
+    "train_batch_size": 32,
+    "max_seq_length": 80,
+    "local_context_focus": "cdm"
+  },
+  "config14": {
+    "dataset": "restaurant",
+    "output_dir": "output",
+    "use_bert_spc": true,
+    "SRD": 5,
+    "learning_rate": 3e-5,
+    "dropout": 0,
+    "num_train_epochs": 5,
+    "train_batch_size": 32,
+    "max_seq_length": 80,
+    "local_context_focus": "cdm"
+  },
+
+  "config16": {
+    "dataset": "laptop",
+    "output_dir": "output",
+    "use_bert_spc": true,
+    "SRD": 5,
+    "learning_rate": 3e-5,
+    "dropout": 0,
+    "num_train_epochs": 5,
+    "train_batch_size": 32,
+    "max_seq_length": 80,
+    "local_context_focus": "cdw"
+  },
+  "config17": {
+    "dataset": "restaurant",
+    "output_dir": "output",
+    "use_bert_spc": true,
+    "SRD": 5,
+    "learning_rate": 3e-5,
+    "dropout": 0,
+    "num_train_epochs": 5,
+    "train_batch_size": 32,
+    "max_seq_length": 80,
+    "local_context_focus": "cdw"
+  },
+
+  "config19": {
+    "dataset": "laptop",
+    "output_dir": "output",
+    "use_bert_spc": true,
+    "SRD": 5,
+    "learning_rate": 3e-5,
+    "dropout": 0,
+    "num_train_epochs": 5,
+    "train_batch_size": 32,
+    "max_seq_length": 80,
+    "local_context_focus": "fusion"
+  },
+  "config20": {
+    "dataset": "restaurant",
+    "output_dir": "output",
+    "use_bert_spc": true,
+    "SRD": 5,
+    "learning_rate": 3e-5,
+    "dropout": 0,
+    "num_train_epochs": 5,
+    "train_batch_size": 32,
+    "max_seq_length": 80,
+    "local_context_focus": "fusion"
+  },
+
+  "config22": {
+    "dataset": "laptop",
+    "output_dir": "output",
+    "use_bert_spc": true,
+    "SRD": 5,
+    "learning_rate": 3e-5,
+    "dropout": 0,
+    "num_train_epochs": 5,
+    "train_batch_size": 32,
+    "max_seq_length": 80,
+    "local_context_focus": "None"
+  },
+  "config23": {
+    "dataset": "restaurant",
+    "output_dir": "output",
+    "use_bert_spc": true,
+    "SRD": 5,
+    "learning_rate": 3e-5,
+    "dropout": 0,
+    "num_train_epochs": 5,
+    "train_batch_size": 32,
+    "max_seq_length": 80,
+    "local_context_focus": "None"
+  }
+
+}

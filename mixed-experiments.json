@@ -1,0 +1,98 @@
+{
+  "config1": {
+    "dataset": "mixed",
+    "output_dir": "output",
+    "use_bert_spc": false,
+    "SRD": 5,
+    "learning_rate": 3e-5,
+    "dropout": 0,
+    "num_train_epochs": 5,
+    "train_batch_size": 16,
+    "max_seq_length": 80,
+    "local_context_focus": "cdm"
+  },
+    "config2": {
+    "dataset": "mixed",
+    "output_dir": "output",
+    "use_bert_spc": false,
+    "SRD": 5,
+    "learning_rate": 3e-5,
+    "dropout": 0,
+    "num_train_epochs": 5,
+    "train_batch_size": 16,
+    "max_seq_length": 80,
+    "local_context_focus": "cdw"
+  },
+    "config3": {
+    "dataset": "mixed",
+    "output_dir": "output",
+    "use_bert_spc": false,
+    "SRD": 5,
+    "learning_rate": 3e-5,
+    "dropout": 0,
+    "num_train_epochs": 5,
+    "train_batch_size": 16,
+    "max_seq_length": 80,
+    "local_context_focus": "fusion"
+  },
+    "config4": {
+    "dataset": "mixed",
+    "output_dir": "output",
+    "use_bert_spc": false,
+    "SRD": 5,
+    "learning_rate": 3e-5,
+    "dropout": 0,
+    "num_train_epochs": 5,
+    "train_batch_size": 16,
+    "max_seq_length": 80,
+    "local_context_focus": "None"
+  },
+    "config5": {
+    "dataset": "mixed",
+    "output_dir": "output",
+    "use_bert_spc": true,
+    "SRD": 5,
+    "learning_rate": 3e-5,
+    "dropout": 0,
+    "num_train_epochs": 5,
+    "train_batch_size": 16,
+    "max_seq_length": 80,
+    "local_context_focus": "cdm"
+  },
+    "config6": {
+    "dataset": "mixed",
+    "output_dir": "output",
+    "use_bert_spc": true,
+    "SRD": 5,
+    "learning_rate": 3e-5,
+    "dropout": 0,
+    "num_train_epochs": 5,
+    "train_batch_size": 16,
+    "max_seq_length": 80,
+    "local_context_focus": "cdw"
+  },
+    "config7": {
+    "dataset": "mixed",
+    "output_dir": "output",
+    "use_bert_spc": true,
+    "SRD": 5,
+    "learning_rate": 3e-5,
+    "dropout": 0,
+    "num_train_epochs": 5,
+    "train_batch_size": 16,
+    "max_seq_length": 80,
+    "local_context_focus": "fusion"
+  },
+    "config8": {
+    "dataset": "mixed",
+    "output_dir": "output",
+    "use_bert_spc": true,
+    "SRD": 5,
+    "learning_rate": 3e-5,
+    "dropout": 0,
+    "num_train_epochs": 5,
+    "train_batch_size": 16,
+    "max_seq_length": 80,
+    "local_context_focus": "None"
+  }
+}
