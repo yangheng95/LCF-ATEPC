@@ -15,8 +15,8 @@ codes for our paper [A Multi-task Learning Model for Chinese-oriented Aspect Pol
 * Python >= 3.7
 * PyTorch >= 1.0
 * [pytorch-transformers](https://github.com/huggingface/pytorch-transformers) >= 1.2.0
-* 现在，BERT-SPC不能被用于训练和测试ATE任务。 指定 `use_bert_spc = True` 可以提升APC任务性能。
-* Default to remove the BERT-SPC input format to keep the reliability of the ATE performance. Set `use_bert_spc = True` to improve the APC performance while only APC subtask is considered.
+* 现在，BERT-SPC不能被用于训练和测试ATE任务。 但指定 `use_bert_spc = True` 可以提升英语数据集上的APC任务性能。
+* Removed the BERT-SPC input format to keep the reliability of the ATE performance. Set `use_bert_spc = True` to improve the APC performance while only APC subtask is considered.
 
 ## Training
 We use the configuration file to manage experiments setting.
@@ -37,7 +37,17 @@ Since BERT models require a lot of memory. If the out-of-memory problem while tr
 
 ## Model Performance
 
-Pending Evaluation...
+### Performance on Chinese Datasets
+
+![chinese](assets/Chinese-results.png)
+
+### Performance on Multilingual Datasets
+
+![multilingual](assets/Multilingual-results.png)
+
+### Optimal Performance on Laptop and Restaurant Datasets
+
+![semeval2014](assets/SemEval-2014-results.png)
 
 ## Model Architecture
 ![lcf](assets/lcf-atepc.png)
