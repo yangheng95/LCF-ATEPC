@@ -43,7 +43,7 @@ Since BERT models require a lot of memory. If the out-of-memory problem while tr
 
 ### Performance on Multilingual Datasets
 
-![multilingual](assets/Multilingual-results.png)
+![multilingual](assets/multilingual-results.png)
 
 ### Optimal Performance on Laptop and Restaurant Datasets
 
