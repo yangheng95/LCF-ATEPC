@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# file: batch_train.py
+# file: train.py
 # author: yangheng <yangheng@m.scnu.edu.cn>
 # Copyright (C) 2019. All Rights Reserved.
 
@@ -70,6 +70,8 @@ def main(config):
         'notebook': "bert-base-chinese",
         'laptop': "bert-base-uncased",
         'restaurant': "bert-base-uncased",
+        # for loading domain-adapted BERT
+        # 'restaurant': "../bert_pretrained_restaurant",
         'twitter': "bert-base-uncased",
         'mixed': "bert-base-multilingual-uncased",
     }
@@ -258,17 +260,22 @@ def main(config):
                 global_step += 1
                 if global_step % args.eval_steps == 0:
                     if epoch >= args.num_train_epochs-2 or args.num_train_epochs<=2:
-                        # evaluate only in last 2 epochs
+                        # evaluate in last 2 epochs
                         apc_result, ate_result = evaluate(eval_ATE=not args.use_bert_spc)
+
                         # apc_result, ate_result = evaluate()
-                        path = '{0}/{1}_{2}_apcacc_{3}_apcf1_{4}_atef1_{5}'.format(
-                            args.output_dir,
-                            args.dataset,
-                            args.local_context_focus,
-                            round(apc_result['max_apc_test_acc'], 2),
-                            round(apc_result['max_apc_test_f1'], 2),
-                            round(ate_result, 2)
-                        )
+                        # path = '{0}/{1}_{2}_apcacc_{3}_apcf1_{4}_atef1_{5}'.format(
+                        #     args.output_dir,
+                        #     args.dataset,
+                        #     args.local_context_focus,
+                        #     round(apc_result['max_apc_test_acc'], 2),
+                        #     round(apc_result['max_apc_test_f1'], 2),
+                        #     round(ate_result, 2)
+                        # )
+                        # if apc_result['max_apc_test_acc'] > max_apc_test_acc or \
+                        #     apc_result['max_apc_test_f1'] > max_apc_test_f1 or \
+                        #     ate_result > max_ate_test_f1:
+                        #     save_model(path)
 
                         if apc_result['max_apc_test_acc'] > max_apc_test_acc:
                             max_apc_test_acc = apc_result['max_apc_test_acc']
@@ -276,11 +283,6 @@ def main(config):
                             max_apc_test_f1 = apc_result['max_apc_test_f1']
                         if ate_result > max_ate_test_f1:
                             max_ate_test_f1 = ate_result
-
-                        if apc_result['max_apc_test_acc'] > max_apc_test_acc or \
-                            apc_result['max_apc_test_f1'] > max_apc_test_f1 or \
-                            ate_result > max_ate_test_f1:
-                            save_model(path)
 
                         current_apc_test_acc = apc_result['max_apc_test_acc']
                         current_apc_test_f1 = apc_result['max_apc_test_f1']
@@ -301,7 +303,6 @@ def main(config):
 
     return train()
 
-
 def parse_experiments(path):
     configs = []
     opt = argparse.ArgumentParser()
@@ -315,18 +316,17 @@ def parse_experiments(path):
         parser.add_argument("--SRD", default=int(config['SRD']), type=int)
         parser.add_argument("--learning_rate", default=float(config['learning_rate']), type=float,
                             help="The initial learning rate for Adam.")
-        parser.add_argument("--use_bert_spc", default=bool(config['use_bert_spc']), type=bool)
-        parser.add_argument("--local_context_focus",
-                            default=None if 'None' in config['local_context_focus'] else config['local_context_focus'],
-                            type=str)
+        parser.add_argument("--use_unique_bert", default=bool(config['use_unique_bert']), type=bool)
+        parser.add_argument("--use_bert_spc", default=bool(config['use_bert_spc_for_apc']), type=bool)
+        parser.add_argument("--local_context_focus", default=config['local_context_focus'], type=str)
         parser.add_argument("--num_train_epochs", default=float(config['num_train_epochs']), type=float,
                             help="Total number of training epochs to perform.")
         parser.add_argument("--train_batch_size", default=int(config['train_batch_size']), type=int,
                             help="Total batch size for training.")
         parser.add_argument("--dropout", default=float(config['dropout']), type=int)
         parser.add_argument("--max_seq_length", default=int(config['max_seq_length']), type=int)
-        parser.add_argument("--eval_batch_size", default=16, type=int, help="Total batch size for eval.")
-        parser.add_argument("--eval_steps", default=5, help="evaluate per steps")
+        parser.add_argument("--eval_batch_size", default=32, type=int, help="Total batch size for eval.")
+        parser.add_argument("--eval_steps", default=20, help="evaluate per steps")
         parser.add_argument('--gradient_accumulation_steps', type=int, default=1,
                             help="Number of updates steps to accumulate before performing a backward/update pass.")
 
@@ -336,7 +336,7 @@ def parse_experiments(path):
 if __name__ == "__main__":
 
     experiments = argparse.ArgumentParser()
-    experiments.add_argument('--config_path', default='experiments.json', type=str,help='Path of experiments config file')
+    experiments.add_argument('--config_path', default='experiments.json', type=str, help='Path of experiments config file')
     experiments = experiments.parse_args()
 
     from utils.Pytorch_GPUManager import GPUManager
@@ -344,7 +344,7 @@ if __name__ == "__main__":
     index = GPUManager().auto_choice()
     device = torch.device("cuda:" + str(index) if torch.cuda.is_available() else "cpu")
     exp_configs = parse_experiments(experiments.config_path)
-    n = 3
+    n = 1
     for config in exp_configs:
             logger.info('-'*80)
             logger.info('Config {} (totally {} configs)'.format(exp_configs.index(config)+1,len(exp_configs)))
@@ -354,6 +354,16 @@ if __name__ == "__main__":
                 config.device = device
                 config.seed = i + 1
                 logger.info('No.{} training process of {}'.format(i + 1, n))
-                results.append(main(config))
+                apc_test_acc, apc_test_f1, ate_test_f1 = main(config)
+
+                if apc_test_acc > max_apc_test_acc:
+                    max_apc_test_acc = apc_test_acc
+                if apc_test_f1 > max_apc_test_f1:
+                    max_apc_test_f1 = apc_test_f1
+                if ate_test_f1 > max_ate_test_f1:
+                    max_ate_test_f1 = ate_test_f1
+                logger.info('max_ate_test_f1:{} max_apc_test_acc: {}\tmax_apc_test_f1: {} \t'
+                            .format(max_ate_test_f1, max_apc_test_acc, max_apc_test_f1))
+
 
 

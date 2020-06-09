@@ -162,7 +162,6 @@ class ATEPCProcessor(DataProcessor):
 
     def get_labels(self):
         return ["O", "B-ASP", "I-ASP", "[CLS]", "[SEP]"]
-        # return ["O", "B-ASP", "I-ASP"]
 
     def _create_examples(self, lines, set_type):
         examples = []
@@ -256,9 +255,6 @@ def convert_examples_to_features(examples, label_list, max_seq_length, tokenizer
         input_mask = [1] * len(input_ids_spc)
         label_mask = [1] * len(label_ids)
         # import numpy as np
-        # if len(input_ids_spc) != len(label_ids):
-        #     print(label_ids)
-        #     print(input_ids_spc)
         while len(input_ids_spc) < max_seq_length:
             input_ids_spc.append(0)
             input_mask.append(0)
@@ -292,103 +288,6 @@ def convert_examples_to_features(examples, label_list, max_seq_length, tokenizer
         # label_ids = np.array(label_ids)
         # labels = np.array(labels)
         # valid = np.array(valid)
-        features.append(
-            InputFeatures(input_ids_spc=input_ids_spc,
-                          input_mask=input_mask,
-                          segment_ids=segment_ids,
-                          label_id=label_ids,
-                          polarities=polarities,
-                          valid_ids=valid,
-                          label_mask=label_mask))
-    return features
-
-def convert_examples_to_features1(examples, label_list, max_seq_length, tokenizer):
-    """Loads a data file into a list of `InputBatch`s."""
-    # print('converting_examples_to_features')
-    label_map = {label: i for i, label in enumerate(label_list, 1)}
-
-    features = []
-    for (ex_index, example) in enumerate(examples):
-        text_spc_tokens = example.text_a.split(' ')
-        labellist = example.label
-        polaritiylist = example.polarity
-        tokens = []
-        labels = []
-        polarities = []
-        valid = []
-        label_mask = []
-        for i, word_of_spc in enumerate(text_spc_tokens):
-            token_of_spc = tokenizer.tokenize(word_of_spc)
-            tokens.extend(token_of_spc)
-            label_1 = labellist[i]
-            polarity_1 = polaritiylist[i]
-            for m in range(len(token_of_spc)):
-                if m == 0:
-                    labels.append(label_1)
-                    polarities.append(polarity_1)
-                    valid.append(1)
-                    label_mask.append(1)
-                else:
-                    valid.append(0)
-        if len(tokens) >= max_seq_length - 1:
-            tokens = tokens[0:(max_seq_length - 2)]
-            labels = labels[0:(max_seq_length - 2)]
-            polarities = polarities[0:(max_seq_length - 2)]
-            valid = valid[0:(max_seq_length - 2)]
-            label_mask = label_mask[0:(max_seq_length - 2)]
-        ntokens = []
-        segment_ids = []
-        label_ids = []
-        polarities.insert(0,-1)
-        polarities.append(-1)
-        ntokens.append("[CLS]")
-        segment_ids.append(0)
-        valid.insert(0, 1)
-        label_mask.insert(0, 1)
-        label_ids.append(label_map["[CLS]"])
-        for i, token_of_spc in enumerate(tokens):
-            ntokens.append(token_of_spc)
-            segment_ids.append(0)
-            if len(labels) > i:
-                label_ids.append(label_map[labels[i]])
-        ntokens.append("[SEP]")
-        segment_ids.append(0)
-        valid.append(1)
-        label_mask.append(1)
-        label_ids.append(label_map["[SEP]"])
-        input_ids_spc = tokenizer.convert_tokens_to_ids(ntokens)
-        input_mask = [1] * len(input_ids_spc)
-        label_mask = [1] * len(label_ids)
-        while len(input_ids_spc) < max_seq_length:
-            input_ids_spc.append(0)
-            input_mask.append(0)
-            segment_ids.append(0)
-            label_ids.append(0)
-            valid.append(1)
-            label_mask.append(0)
-        while len(label_ids) < max_seq_length:
-            label_ids.append(0)
-            label_mask.append(0)
-        while len(polarities) < max_seq_length:
-            polarities.append(-1)
-        assert len(input_ids_spc) == max_seq_length
-        assert len(input_mask) == max_seq_length
-        assert len(segment_ids) == max_seq_length
-        assert len(label_ids) == max_seq_length
-        assert len(polarities) == max_seq_length
-        assert len(valid) == max_seq_length
-        assert len(label_mask) == max_seq_length
-
-        # if ex_index < 5:
-        #     print("*** Example ***")
-        #     print("guid: %s" % (example.guid))
-        #     print("tokens: %s" % " ".join(
-        #         [str(x) for x in tokens]))
-        #     print("input_ids_spc: %s" % " ".join([str(x) for x in input_ids_spc]))
-        #     print("input_mask: %s" % " ".join([str(x) for x in input_mask]))
-        #     print(
-        #         "segment_ids: %s" % " ".join([str(x) for x in segment_ids]))
-        #     # print("label: %s (id = %d)" % (example.label, label_ids))
 
         features.append(
             InputFeatures(input_ids_spc=input_ids_spc,
@@ -399,101 +298,3 @@ def convert_examples_to_features1(examples, label_list, max_seq_length, tokenize
                           valid_ids=valid,
                           label_mask=label_mask))
     return features
-#
-# def convert_examples_to_features(examples, label_list, max_seq_length, tokenizer):
-#     """Loads a data file into a list of `InputBatch`s."""
-#     # print('converting_examples_to_features')
-#     label_map = {label: i for i, label in enumerate(label_list, 1)}
-#
-#     features = []
-#     for (ex_index, example) in enumerate(examples):
-#         text_spc_tokens = example.text_a.split(' ')
-#         labellist = example.label
-#         polaritiylist = example.polarity
-#         tokens = []
-#         labels = []
-#         polarities = []
-#         valid = []
-#         label_mask = []
-#         for i, word_of_spc in enumerate(text_spc_tokens):
-#             token_of_spc = tokenizer.tokenize(word_of_spc)
-#             tokens.extend(token_of_spc)
-#             label_1 = labellist[i]
-#             polarity_1 = polaritiylist[i]
-#             for m in range(len(token_of_spc)):
-#                 if m == 0:
-#                     labels.append(label_1)
-#                     polarities.append(polarity_1)
-#                     valid.append(1)
-#                     label_mask.append(1)
-#                 else:
-#                     valid.append(0)
-#         if len(tokens) >= max_seq_length - 1:
-#             tokens = tokens[0:(max_seq_length - 2)]
-#             labels = labels[0:(max_seq_length - 2)]
-#             polarities = polarities[0:(max_seq_length - 2)]
-#             valid = valid[0:(max_seq_length - 2)]
-#             label_mask = label_mask[0:(max_seq_length - 2)]
-#         ntokens = []
-#         segment_ids = []
-#         label_ids = []
-#         polarities.insert(0,-1)
-#         polarities.append(-1)
-#         ntokens.append("[CLS]")
-#         segment_ids.append(0)
-#         valid.insert(0, 1)
-#         label_mask.insert(0, 1)
-#         label_ids.append(label_map["[CLS]"])
-#         for i, token_of_spc in enumerate(tokens):
-#             ntokens.append(token_of_spc)
-#             segment_ids.append(0)
-#             if len(labels) > i:
-#                 label_ids.append(label_map[labels[i]])
-#         ntokens.append("[SEP]")
-#         segment_ids.append(0)
-#         valid.append(1)
-#         label_mask.append(1)
-#         label_ids.append(label_map["[SEP]"])
-#         input_ids_spc = tokenizer.convert_tokens_to_ids(ntokens)
-#         input_mask = [1] * len(input_ids_spc)
-#         label_mask = [1] * len(label_ids)
-#         while len(input_ids_spc) < max_seq_length:
-#             input_ids_spc.append(0)
-#             input_mask.append(0)
-#             segment_ids.append(0)
-#             label_ids.append(0)
-#             valid.append(1)
-#             label_mask.append(0)
-#         while len(label_ids) < max_seq_length:
-#             label_ids.append(0)
-#             label_mask.append(0)
-#         while len(polarities) < max_seq_length:
-#             polarities.append(-1)
-#         assert len(input_ids_spc) == max_seq_length
-#         assert len(input_mask) == max_seq_length
-#         assert len(segment_ids) == max_seq_length
-#         assert len(label_ids) == max_seq_length
-#         assert len(polarities) == max_seq_length
-#         assert len(valid) == max_seq_length
-#         assert len(label_mask) == max_seq_length
-#
-#         # if ex_index < 5:
-#         #     print("*** Example ***")
-#         #     print("guid: %s" % (example.guid))
-#         #     print("tokens: %s" % " ".join(
-#         #         [str(x) for x in tokens]))
-#         #     print("input_ids_spc: %s" % " ".join([str(x) for x in input_ids_spc]))
-#         #     print("input_mask: %s" % " ".join([str(x) for x in input_mask]))
-#         #     print(
-#         #         "segment_ids: %s" % " ".join([str(x) for x in segment_ids]))
-#         #     # print("label: %s (id = %d)" % (example.label, label_ids))
-#
-#         features.append(
-#             InputFeatures(input_ids_spc=input_ids_spc,
-#                           input_mask=input_mask,
-#                           segment_ids=segment_ids,
-#                           label_id=label_ids,
-#                           polarities=polarities,
-#                           valid_ids=valid,
-#                           label_mask=label_mask))
-#     return features

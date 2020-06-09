@@ -14,9 +14,8 @@ codes for our paper [A Multi-task Learning Model for Chinese-oriented Aspect Pol
 
 * Python >= 3.7
 * PyTorch >= 1.0
-* [pytorch-transformers](https://github.com/huggingface/pytorch-transformers) >= 1.2.0
-* 现在，BERT-SPC不能被用于训练和测试ATE任务。 但指定 `use_bert_spc = True` 可以提升英语数据集上的APC任务性能。
-* Removed the BERT-SPC input format to keep the reliability of the ATE performance. Set `use_bert_spc = True` to improve the APC performance while only APC subtask is considered.
+* [pytorch-transformers](https://github.com/huggingface/pytorch-transformers) = 1.2.0 (Package ``transformers`` is recommended for our code)
+* Set `use_bert_spc = True` to improve the APC performance while only APC is evaluated.
 
 ## Training
 We use the configuration file to manage experiments setting.
@@ -33,9 +32,11 @@ python train.py --config_path experiments.json
 Since BERT models require a lot of memory. If the out-of-memory problem while training the model, here are the ways to mitigate the problem:
 1. Reduce the training batch size ( train_batch_size = 4 or 8 )
 2. Reduce the longest input sequence ( max_seq_length = 40 or 60 )
-3. Use a unique BERT layer to model for both local and global contexts
+3. Set `use_unique_bert = true` to use a unique BERT layer to model for both local and global contexts
 
 ## Model Performance
+
+We made our efforts to make our benchmarks reproducible. However, the performance of the LCF-ATEPC models fluctuates and any slight changes in the model structure could also influence performance. Try different random seed to achieve optimal results.
 
 ### Performance on Chinese Datasets
 
@@ -55,8 +56,10 @@ Since BERT models require a lot of memory. If the out-of-memory problem while tr
 ## Notice
 
 We cleaned up and refactored the original codes for easy understanding and reproduction.
-Due to the busy schedule, we didn't test all the training situations. If you find any issue in this repo,
+However, we didn't test all the training situations for the refactored codes. If you find any issue in this repo,
 You can raise an issue or submit a pull request, whichever is more convenient for you.
+
+Due to the busy schedule, some module may not update for long term, such as saving and loading module for trained models, inferring module, etc. If possible, we sincerely request for someone to accomplish these work.
 
 ## Citation
 

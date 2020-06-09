@@ -28,7 +28,7 @@ def read_chinese(path):
             polarities[i] = polarities[i].strip()
 
         from pytorch_transformers import BertTokenizer
-        tokenizer = BertTokenizer.from_pretrained('bert-base-chinese', do_lower_case=True)
+        tokenizer = BertTokenizer.from_pretrained('bert_for_global_context-base-chinese', do_lower_case=True)
 
         with open(output_path, 'w', encoding='utf-8', newline='\n', errors='ignore') as f_out:
             print(len(reviews))
