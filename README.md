@@ -14,7 +14,7 @@ codes for our paper [A Multi-task Learning Model for Chinese-oriented Aspect Pol
 
 * Python >= 3.7
 * PyTorch >= 1.0
-* [pytorch-transformers](https://github.com/huggingface/pytorch-transformers) = 1.2.0 (Package ``transformers`` is recommended for our code)
+* [pytorch-transformers](https://github.com/huggingface/pytorch-transformers) = 1.2.0 (Package ``transformers`` is not recommended for our code)
 * Set `use_bert_spc = True` to improve the APC performance while only APC is evaluated.
 
 ## Training
