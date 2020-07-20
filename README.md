@@ -1,9 +1,5 @@
 # LCF-ATEPC
 
-## Improtant 
-
-This repository is out of maintance, because the LCF-ATEPC has been merged to [LC-ABSA](https://github.com/yangheng95/LC-ABSA). 
-
 codes for our paper [A Multi-task Learning Model for Chinese-oriented Aspect Polarity Classification and Aspect Term Extraction](https://arxiv.org/abs/1912.07976)
 
 > LCF-ATEPC，面向中文及多语言的ATE和APC联合学习模型，基于PyTorch和pytorch-transformers.
