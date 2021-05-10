@@ -4,7 +4,8 @@
 # Copyright (C) 2019. All Rights Reserved.
 
 
-from pytorch_transformers.modeling_bert import BertForTokenClassification, BertPooler, BertSelfAttention
+# from pytorch_transformers.modeling_bert import BertForTokenClassification, BertPooler, BertSelfAttention
+from transformers.models.bert.modeling_bert import BertForTokenClassification, BertPooler, BertSelfAttention
 
 from torch.nn import Linear, CrossEntropyLoss
 import torch
@@ -140,7 +141,7 @@ class LCF_ATEPC(BertForTokenClassification):
         if not self.args.use_bert_spc:
             input_ids_spc = self.get_ids_for_local_context_extractor(input_ids_spc)
             labels = self.get_batch_token_labels_bert_base_indices(labels)
-        global_context_out, _ = self.bert_for_global_context(input_ids_spc, token_type_ids, attention_mask)
+        global_context_out = self.bert_for_global_context(input_ids_spc, token_type_ids, attention_mask)['last_hidden_state']
         polarity_labels = self.get_batch_polarities(polarities)
 
         batch_size, max_len, feat_dim = global_context_out.shape
@@ -161,7 +162,7 @@ class LCF_ATEPC(BertForTokenClassification):
             else:
                 local_context_ids = input_ids_spc
 
-            local_context_out, _ = self.bert_for_local_context(input_ids_spc)
+            local_context_out = self.bert_for_local_context(input_ids_spc)['last_hidden_state']
             batch_size, max_len, feat_dim = local_context_out.shape
             local_valid_output = torch.zeros(batch_size, max_len, feat_dim, dtype=torch.float32).to(self.args.device)
             for i in range(batch_size):

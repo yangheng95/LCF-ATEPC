@@ -14,9 +14,12 @@ from time import strftime, localtime
 import numpy as np
 import torch
 import torch.nn.functional as F
-from pytorch_transformers.optimization import AdamW
-from pytorch_transformers.tokenization_bert import BertTokenizer
-from pytorch_transformers.modeling_bert import BertModel
+from transformers.optimization import AdamW
+from transformers.models.bert.modeling_bert import BertModel
+from transformers import BertTokenizer
+# from pytorch_transformers.optimization import AdamW
+# from pytorch_transformers.tokenization_bert import BertTokenizer
+# from pytorch_transformers.modeling_bert import BertModel
 from seqeval.metrics import classification_report
 from torch.utils.data import (DataLoader, RandomSampler, SequentialSampler, TensorDataset)
 
@@ -344,7 +347,7 @@ if __name__ == "__main__":
     index = GPUManager().auto_choice()
     device = torch.device("cuda:" + str(index) if torch.cuda.is_available() else "cpu")
     exp_configs = parse_experiments(experiments.config_path)
-    n = 1
+    n = 5
     for config in exp_configs:
             logger.info('-'*80)
             logger.info('Config {} (totally {} configs)'.format(exp_configs.index(config)+1,len(exp_configs)))
