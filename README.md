@@ -27,6 +27,10 @@ Then,
 python train.py --config_path experiments.json
 ```
 
+## About dataset
+
+If you want to build your dataset, please find the description of the dataset [here](https://github.com/yangheng95/LCF-ATEPC/issues/25)
+
 ## Out of Memory
 
 Since BERT models require a lot of memory. If the out-of-memory problem while training the model, here are the ways to mitigate the problem:
