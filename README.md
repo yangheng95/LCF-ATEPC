@@ -10,6 +10,11 @@ codes for our paper [A Multi-task Learning Model for Chinese-oriented Aspect Pol
 ![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/a-multi-task-learning-model-for-chinese/aspect-based-sentiment-analysis-on-semeval)](https://paperswithcode.com/sota/aspect-based-sentiment-analysis-on-semeval?p=a-multi-task-learning-model-for-chinese)
 
+# Note
+The script used for extracting aspect and classifying sentiment are available [here](https://github.com/yangheng95/pyabsa/blob/release/examples/atepc_usages/extract_aspects.py).
+
+方面抽取与情感预测功能提供在[这里](https://github.com/yangheng95/pyabsa/blob/release/examples/atepc_usages/extract_aspects.py)。
+
 ## Requirement
 
 * Python >= 3.7
