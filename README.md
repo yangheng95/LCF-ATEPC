@@ -23,6 +23,22 @@ To use our models, you may need download `en_core_web_sm` by
 
 `python -m spacy download en_core_web_sm`
 
+### Aspect Extraction Output Format (方面术语抽取结果示例如下):
+```
+Sentence with predicted labels:
+It(O) was(O) pleasantly(O) uncrowded(O) ,(O) the(O) service(B-ASP) was(O) delightful(O) ,(O) the(O) garden(B-ASP) adorable(O) ,(O) the(O) food(B-ASP) -LRB-(O) from(O) appetizers(B-ASP) to(O) entrees(B-ASP) -RRB-(O) was(O) delectable(O) .(O)
+{'aspect': 'service', 'position': '7', 'sentiment': 'Positive'}
+{'aspect': 'garden', 'position': '12', 'sentiment': 'Positive'}
+{'aspect': 'food', 'position': '16', 'sentiment': 'Positive'}
+{'aspect': 'appetizers', 'position': '19', 'sentiment': 'Positive'}
+{'aspect': 'entrees', 'position': '21', 'sentiment': 'Positive'}
+Sentence with predicted labels:
+How(O) pretentious(O) and(O) inappropriate(O) for(O) MJ(O) Grill(O) to(O) claim(O) that(O) it(O) provides(O) power(O) lunch(B-ASP) and(O) dinners(B-ASP) !(O)
+{'aspect': 'lunch', 'position': '14', 'sentiment': 'Negative'}
+{'aspect': 'dinners', 'position': '16', 'sentiment': 'Negative'}
+
+```
+
 ## Quick Start
 
 1. Convert APC datasets to ATEPC datasets
