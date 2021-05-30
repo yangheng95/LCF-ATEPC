@@ -98,8 +98,8 @@ atepc_result = aspect_extractor.extract_aspect(examples,
 
 * Python >= 3.7
 * PyTorch >= 1.0
-* [pytorch-transformers](https://github.com/huggingface/pytorch-transformers) = 1.2.0 (Package ``transformers`` is not recommended for our code)
-* Set `use_bert_spc = True` to improve the APC performance while only APC is evaluated.
+* transformers >= 4.5.1
+* Set `use_bert_spc = True` to improve the APC performance while only APC is considered.
 
 ## Training
 We use the configuration file to manage experiments setting.
