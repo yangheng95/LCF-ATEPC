@@ -19,12 +19,74 @@ LCF-ATEPC模型进行方面抽取与情感预测的用法请见[这里](https://
 
 Install this repo by `pip install pyabsa`.
 
-To use our models, you may need download `en_core_web_sm` by
 
-`python -m spacy download en_core_web_sm`
+# Aspect Term Extraction and Polarity Classification (ATEPC)
+## Quick Start
 
-### Aspect Extraction Output Format (方面术语抽取结果示例如下):
+### 1. Import necessary entries
+
 ```
+from pyabsa.functional import ATEPCModelList
+from pyabsa.functional import Trainer, ATEPCTrainer
+from pyabsa.functional import ABSADatasetList
+from pyabsa.functional import ATEPCConfigManager
+```
+
+### 2. Choose a base param config
+
+```
+config = ATEPCConfigManager.get_atepc_config_english()
+```
+
+### 3. Specify an ATEPC model and alter some hyper-parameters (if necessary)
+
+```
+atepc_config_english = ATEPCConfigManager.get_atepc_config_english()
+atepc_config_english.num_epoch = 10
+atepc_config_english.evaluate_begin = 4
+atepc_config_english.log_step = 100
+atepc_config_english.model = ATEPCModelList.LCF_ATEPC
+```
+
+### 4. Configure runtime setting and running training
+
+```
+laptop14 = ABSADatasetList.Laptop14
+
+aspect_extractor = ATEPCTrainer(config=atepc_config_english, 
+                                dataset=laptop14
+                                )
+```
+
+### 5. Aspect term extraction & sentiment inference
+
+```
+from pyabsa import ATEPCCheckpointManager
+
+examples = ['相比较原系列锐度高了不少这一点好与不好大家有争议',
+            '这款手机的大小真的很薄，但是颜色不太好看， 总体上我很满意啦。'
+            ]
+aspect_extractor = ATEPCCheckpointManager.get_aspect_extractor(checkpoint='chinese',
+                                                               auto_device=True  # False means load model on CPU
+                                                               )
+
+inference_source = pyabsa.ABSADatasetList.SemEval
+atepc_result = aspect_extractor.extract_aspect(inference_source=inference_source, 
+                                               save_result=True,
+                                               print_result=True,  # print the result
+                                               pred_sentiment=True,  # Predict the sentiment of extracted aspect terms
+                                               )
+```
+### 6. Aspect term extraction & sentiment inference output format (方面抽取及情感分类结果示例如下):
+
+```
+Sentence with predicted labels:
+关(O) 键(O) 的(O) 时(O) 候(O) 需(O) 要(O) 表(O) 现(O) 持(O) 续(O) 影(O) 像(O) 的(O) 短(B-ASP) 片(I-ASP) 功(I-ASP) 能(I-ASP) 还(O) 是(O) 很(O) 有(O) 用(O) 的(O)
+{'aspect': '短 片 功 能', 'position': '14,15,16,17', 'sentiment': '1'}
+Sentence with predicted labels:
+相(O) 比(O) 较(O) 原(O) 系(O) 列(O) 锐(B-ASP) 度(I-ASP) 高(O) 了(O) 不(O) 少(O) 这(O) 一(O) 点(O) 好(O) 与(O) 不(O) 好(O) 大(O) 家(O) 有(O) 争(O) 议(O)
+{'aspect': '锐 度', 'position': '6,7', 'sentiment': '0'}
+
 Sentence with predicted labels:
 It(O) was(O) pleasantly(O) uncrowded(O) ,(O) the(O) service(B-ASP) was(O) delightful(O) ,(O) the(O) garden(B-ASP) adorable(O) ,(O) the(O) food(B-ASP) -LRB-(O) from(O) appetizers(B-ASP) to(O) entrees(B-ASP) -RRB-(O) was(O) delectable(O) .(O)
 {'aspect': 'service', 'position': '7', 'sentiment': 'Positive'}
@@ -33,82 +95,9 @@ It(O) was(O) pleasantly(O) uncrowded(O) ,(O) the(O) service(B-ASP) was(O) deligh
 {'aspect': 'appetizers', 'position': '19', 'sentiment': 'Positive'}
 {'aspect': 'entrees', 'position': '21', 'sentiment': 'Positive'}
 Sentence with predicted labels:
-How(O) pretentious(O) and(O) inappropriate(O) for(O) MJ(O) Grill(O) to(O) claim(O) that(O) it(O) provides(O) power(O) lunch(B-ASP) and(O) dinners(B-ASP) !(O)
-{'aspect': 'lunch', 'position': '14', 'sentiment': 'Negative'}
-{'aspect': 'dinners', 'position': '16', 'sentiment': 'Negative'}
-
 ```
+Check the detailed usages in [ATE examples](https://github.com/yangheng95/PyABSA/tree/release/examples/aspect_term_extraction) directory.
 
-## Quick Start
-
-1. Convert APC datasets to ATEPC datasets
-
-```
-from pyabsa import convert_apc_set_to_atepc
-
-convert_apc_set_to_atepc(r'../apc_usages/datasets/restaurant16')
-```
-
-2. Training for ATEPC
-
-```
-from pyabsa import train_atepc
-
-# see hyper-parameters in pyabsa/main/training_configs.py
-param_dict = {'model_name': 'lcf_atepc',
-              'batch_size': 16,
-              'seed': 1,
-              'device': 'cuda',
-              'num_epoch': 5,
-              'optimizer': "adamw",
-              'learning_rate': 0.00002,
-              'pretrained_bert_name': "bert-base-uncased",
-              'use_dual_bert': False,
-              'use_bert_spc': False,
-              'max_seq_len': 80,
-              'log_step': 30,
-              'SRD': 3,
-              'lcf': "cdw",
-              'dropout': 0,
-              'l2reg': 0.00001,
-              'polarities_dim': 3
-              }
-
-# Mind that polarities_dim = 2 for Chinese datasets, and the 'train_atepc' function only evaluates in last few epochs
-
-train_set_path = 'atepc_datasets/restaurant14'
-save_path = '../atepc_usages/state_dict'
-aspect_extractor = train_atepc(parameter_dict=param_dict,  # set param_dict=None to use default model
-                               dataset_path=train_set_path,  # file or dir, dataset(s) will be automatically detected
-                               model_path_to_save=save_path,
-                               auto_evaluate=True,  # evaluate model while training if test set is available
-                               auto_device=True  # Auto choose CUDA or CPU
-                               )
-
-```
-
-3. Extract aspect terms
-```
-from pyabsa import load_aspect_extractor
-
-examples = ['But the staff was so nice to us .',
-            'But the staff was so horrible to us .',
-            r'Not only was the food outstanding , but the little ` perks \' were great .',
-            'It took half an hour to get our check , which was perfect since we could sit , have drinks and talk !'
-            ]
-            
-# Download the provided pre-training model from Google Drive
-model_path = 'state_dict/lcf_atepc_cdw_rest14_without_spc'
-
-aspect_extractor = load_aspect_extractor(trained_model_path=model_path,
-                                         auto_device=True)
-
-atepc_result = aspect_extractor.extract_aspect(examples,
-                                               print_result=True,
-                                               pred_sentiment=True)
-# print(atepc_result)
-
-```
 
 ## Requirement
 
