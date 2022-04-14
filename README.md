@@ -10,6 +10,8 @@ codes for our paper [A Multi-task Learning Model for Chinese-oriented Aspect Pol
 ![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/a-multi-task-learning-model-for-chinese/aspect-based-sentiment-analysis-on-semeval)](https://paperswithcode.com/sota/aspect-based-sentiment-analysis-on-semeval?p=a-multi-task-learning-model-for-chinese)
 
+# Try our demo [Inference API](https://huggingface.co/spaces/yangheng/PyABSA-ATEPC) on Huggingface Space
+
 # Note
 This latest version of LCF-ATEPC has been integeated in [pyabsa](https://github.com/yangheng95/pyabsa/blob/release/demos/aspect_term_extraction/extract_aspects.py). Please follow pyabsa to get up-to-date functions and tutorials.
 
