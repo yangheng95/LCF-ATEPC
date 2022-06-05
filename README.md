@@ -1,4 +1,4 @@
-# LCF-ATEPC
+# LCF-ATEPC 
 
 codes for our paper [A Multi-task Learning Model for Chinese-oriented Aspect Polarity Classification and Aspect Term Extraction](https://arxiv.org/abs/1912.07976)
 
@@ -10,15 +10,13 @@ codes for our paper [A Multi-task Learning Model for Chinese-oriented Aspect Pol
 ![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/a-multi-task-learning-model-for-chinese/aspect-based-sentiment-analysis-on-semeval)](https://paperswithcode.com/sota/aspect-based-sentiment-analysis-on-semeval?p=a-multi-task-learning-model-for-chinese)
 
-# Try our demo [Inference API](https://huggingface.co/spaces/yangheng/PyABSA-ATEPC) on Huggingface Space
-
-# Note
-This latest version of LCF-ATEPC has been integeated in [pyabsa](https://github.com/yangheng95/pyabsa/blob/release/demos/aspect_term_extraction/extract_aspects.py). Please follow pyabsa to get up-to-date functions and tutorials.
-
+# Important Note
+## This implementation of LCF-ATEPC is outdated, please transfer to the latest implementation and usages at [PyABSA](https://github.com/yangheng95/PyABSA/tree/release/demos/aspect_term_extraction)
 LCF-ATEPC模型进行方面抽取与情感预测的用法请见[这里](https://github.com/yangheng95/pyabsa/blob/release/demos/aspect_term_extraction/extract_aspects.py)。
 
 Check the detailed usages in [ATE examples](https://github.com/yangheng95/PyABSA/tree/release/demos/aspect_term_extraction) directory.
 
+# Try our demo [Inference API](https://huggingface.co/spaces/yangheng/PyABSA-ATEPC) on Huggingface Space (powered by PyABSA)
 
 ## Requirement
 
